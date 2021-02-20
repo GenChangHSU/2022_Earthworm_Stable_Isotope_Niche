@@ -1,0 +1,573 @@
+---
+title: "BiodiversiTREE Data Exploration"
+author: "Gen-Chang Hsu"
+date: "1/18/2021"
+output: html_document
+---
+
+<style type = "text/css">
+
+  body{font-size: 14pt; }
+  
+</style>
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE, 
+                      error = FALSE,
+                      warning = FALSE)
+```
+
+```{r libs, include = FALSE}
+### Libraries
+library(plyr)
+library(tidyverse)
+library(magrittr)
+library(lubridate)
+library(modelr)
+library(broom)
+library(readxl)
+library(SIBER)
+library(ggsci)
+library(hdrcde)
+library(vegan)
+library(lme4)
+library(car)
+library(sjPlot)
+```
+
+# Data Preparation
+```{r data_prep}
+### Load the raw datasets
+Earthworm_data <- read_xlsx("./data_raw/BiodiversiTREE_data.xlsx", sheet = 1)
+Soil_data <- read_xlsx("./data_raw/BiodiversiTREE_data.xlsx", sheet = 2)
+Soil_element <- read_xlsx("./data_raw/BiodiversiTREE_data.xlsx", sheet = 3)
+Earthworm_count <- read_xlsx("./data_raw/BiodiversiTREE_data.xlsx", sheet = 4)
+
+
+### Summarize soil data by plot
+Soil_data_by_plot <- Soil_data %>% 
+  select(Plot, Depth, ends_with(c("d15N", "d13C", "C:N"))) %>%
+  group_by(Plot, Depth) %>%
+  summarise_all(.funs = mean) %>%
+  rename("Mean_d15N_soil" = "Linear corr d15N", 
+         "Mean_d13C_soil" = "Linear corr d13C",
+         "Mean_C:N_soil" = "C:N") %>%
+  ungroup() %>%
+  mutate(Depth = factor(Depth, levels = c("0-2", "2-5", "5-10", "10-20"), ordered = T)) %>%
+  arrange(Plot, Depth)
+
+write_rds(Soil_data_by_plot, "./Output/Data_clean/Soil_data_by_plot.rds")
+
+DT::datatable(Soil_data_by_plot)
+
+### Clean up earthworm SI data
+Earthworm_data_by_plot <- Earthworm_data %>% 
+  select(Plot, Species, ends_with(c("d15N", "d13C", "C:N"))) %>%
+  rename("d15N_earthworm" = "Linear corr d15N", 
+         "d13C_earthworm" = "Linear corr d13C",
+         "C:N_earthworm" = "C:N") %>% 
+  ungroup()
+
+write_rds(Earthworm_data_by_plot, "./Output/Data_clean/Earthworm_data_by_plot.rds")
+
+DT::datatable(Earthworm_data_by_plot)
+```
+
+<br>
+
+# Isotopic niches of earthworm species
+The raw isotope values of earthworms are corrected by subtracting their respective plot background isotope values
+```{r iso_niche}
+### Load the data
+Soil_data_by_plot <- readRDS("./Output/Data_clean/Soil_data_by_plot.rds")
+Earthworm_data_by_plot <- readRDS("./Output/Data_clean/Earthworm_data_by_plot.rds")
+
+
+### Background‐corrected earthworm d13C and d15N
+Earthworm_data_corrected <- Soil_data_by_plot %>% 
+  group_by(Plot) %>%
+  summarise_at(vars(starts_with("Mean")), mean, na.rm = T) %>%
+  right_join(Earthworm_data_by_plot, by = "Plot") %>% 
+  mutate(d15N_earthworm_correct = d15N_earthworm - Mean_d15N_soil,
+         d13C_earthworm_correct = d13C_earthworm - Mean_d13C_soil)
+
+  
+### SI biplot
+ggplot(Earthworm_data_corrected, 
+       aes(x = d13C_earthworm_correct, 
+           y = d15N_earthworm_correct, 
+           color = Species)) +
+  geom_point(size = 1.5, alpha = 0.7, stroke = 1) +
+  theme(axis.text.x = element_text(size = 12, color = "black"),
+        axis.text.y = element_text(size = 12, color = "black"),
+        axis.title.x = element_text(size = 15, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 15, margin = margin(r = 8)),
+        plot.title = element_text(hjust = 0.5, size = 18),
+        plot.margin = rep(unit(0.05,"null"), 4),
+        panel.background = element_rect(fill = "transparent"),
+        plot.background = element_rect(colour = "transparent"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        legend.position = c(0.225, 0.775),
+        legend.spacing.x = unit(0.1, "cm"),
+        legend.spacing.y = unit(0.15, "cm"),
+        legend.key.width = unit(1.2, "cm"),
+        legend.key.size = unit(1, "line"),
+        legend.key = element_blank(),
+        legend.text = element_text(size = 7),
+        legend.text.align = 0,
+        legend.box.just = "center",
+        legend.justification = c(0.5, 0.5),
+        legend.title.align = 0.5,
+        legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "transparent")) +
+  labs(x = expression(paste(Delta^{13}, "C (\u2030)", sep = "")), y = expression(paste(Delta^{15}, "N (\u2030)", sep = "")))+
+  stat_ellipse(type = "t", level = 0.5, size = 0.8) +
+  scale_color_npg(name = NULL, 
+                  label = c(expression(italic("Allolobophora chlorotica")),
+                            expression(italic("Aporrectodea caliginosa")),
+                            expression(italic("Aporrectodea trapezoides")),
+                            expression(paste(italic("Diplocardia"), " sp.")),
+                            expression(italic("Lumbricus friendi")),
+                            expression(italic("Lumbricus rubellus")))) +
+  scale_x_continuous(limits = c(-16, 6), breaks = seq(-15, 5, 5), labels = c("-15.0", "-10.0", "-5.0", "0.0", "5.0")) +
+  scale_y_continuous(limits = c(-3, 7), breaks = seq(-2, 6, 2), labels = c("-2.0", "0.0", "2.0", "4.0", "6.0"))
+
+ggsave("Output/Figures/SI biplot.tiff", width = 6, height = 5, dpi = 600)
+```
+
+<br>
+
+# Summary statistics of earthworm isotopic niches
+1. SEA: Bayesian Standard Ellipse Area using "SIBER" package
+```{r SEA}
+SIBER_data1 <- Earthworm_data_corrected %>% 
+  select(iso1 = d13C_earthworm_correct, 
+         iso2 = d15N_earthworm_correct,
+         group = Species) %>%
+  arrange(group) %>%
+  mutate(community = "") %>% 
+  as.data.frame() %>%
+  createSiberObject()
+
+# ML estimates
+SEA_ML <- groupMetricsML(SIBER_data1) %>% as.data.frame()
+names(SEA_ML) <- str_remove(names(SEA_ML), ".")
+
+# Bayesian estimates
+parms <- list()
+parms$n.iter <- 2*10^4     # Number of iterations per chain
+parms$n.burnin <- 1*10^3   # Burn-in
+parms$n.thin <- 10         # Thinning
+parms$n.chains <- 3        # Number of chains
+
+priors <- list()
+priors$R <- 1*diag(2)      # Inverse Wishart prior
+priors$k <- 2
+priors$tau.mu <- 0.001
+
+SEA_posterior <- siberMVN(SIBER_data1, parms, priors) %>% 
+  siberEllipses() %>%
+  as.data.frame() %>% 
+  `names<-`(SIBER_data1$all.groups)
+
+SEA_Bayes <- rbind(
+  apply(SEA_posterior, 2, mean),
+  apply(SEA_posterior, 2, function(x) {hdr(x, prob = c(95))$hdr[1, 1]}),
+  apply(SEA_posterior, 2, function(x) {hdr(x, prob = c(95))$hdr[1, 2]})) %>%
+  as.data.frame() %>%
+  `row.names<-`(c("SEAb", "SEAb_HDR_lower", "SEAb_HDR_upper"))
+
+DT::datatable(SEA_Bayes)
+
+### Visualization
+SEA_Bayes_plot_df <- SEA_Bayes %>%
+  t() %>% 
+  as.data.frame() %>%
+  mutate(Species = row.names(.)) %>%
+  select(Species, 1:3)
+  
+ggplot(data = SEA_Bayes_plot_df, aes(x = fct_rev(Species), y = SEAb, color = Species)) + 
+  geom_pointrange(aes(ymin = SEAb_HDR_lower, ymax = SEAb_HDR_upper)) +
+  coord_flip() + 
+  labs(x = NULL, y = "Bayesian SEA (Mean ± 95% HDR)") +
+  scale_x_discrete(label = rev(c(expression(italic("Allolobophora chlorotica")),
+                             expression(italic("Aporrectodea caliginosa")),
+                             expression(italic("Aporrectodea trapezoides")),
+                             expression(paste(italic("Diplocardia"), " sp.")),
+                             expression(italic("Lumbricus friendi")),
+                             expression(italic("Lumbricus rubellus"))))) + 
+  scale_y_continuous(limits = c(-1, 21), breaks = c(0, 5, 10, 15, 20)) +
+  scale_color_npg(guide = F) +
+  theme(axis.text.x = element_text(size = 12, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.title.x = element_text(size = 15, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 15, margin = margin(r = 8)),
+        plot.title = element_text(hjust = 0.5, size = 18),
+        plot.margin = rep(unit(0.05,"null"), 4),
+        panel.background = element_rect(fill = "transparent"),
+        plot.background = element_rect(colour = "transparent"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank())
+        
+ggsave("Output/Figures/SEAb.tiff", width = 6, height = 5, dpi = 600)
+
+```
+
+2. Population-level Layman metrics
+```{r Layman, fig.width = 9}
+SIBER_data2 <- Earthworm_data_corrected %>% 
+  select(iso1 = d13C_earthworm_correct, 
+         iso2 = d15N_earthworm_correct,
+         community = Species) %>%
+  arrange(community) %>%
+  dplyr::group_by(community) %>%
+  dplyr::mutate(group = 1:n()) %>%
+  select(1, 2, 4, 3) %>%
+  as.data.frame() %>%
+  createSiberObject()
+
+# ML estimates
+Layman_metrics_ML <- communityMetricsML(SIBER_data2) %>% 
+  as.data.frame() %>%
+  `row.names<-`(c("NR", "CR", row.names(.)[3:6]))
+
+DT::datatable(Layman_metrics_ML)
+
+### Visualization
+Layman_ML_plot_df <- Layman_metrics_ML %>%
+  t() %>% 
+  as.data.frame() %>%
+  mutate(Species = row.names(.)) %>%
+  pivot_longer(cols = -Species, 
+               names_to = "Layman_mtcs", 
+               values_to = "Value") %>%
+  mutate(Layman_mtcs = fct_relevel(Layman_mtcs, "NR", "CR", "TA", "CD", "MNND", "SDNND"))
+
+ggplot(data = Layman_ML_plot_df, 
+       aes(x = Species, y = Value, fill = Species)) + 
+  geom_bar(stat = "identity") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  facet_wrap(~Layman_mtcs, ncol = 3, scales = "free") + 
+  labs(x = NULL, y = expression(paste("Value", " (\u2030)", sep = ""))) +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 12, color = "black"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 15, margin = margin(r = 8)),
+        axis.ticks.x = element_blank(),
+        plot.title = element_text(hjust = 0.5, size = 18),
+        plot.margin = margin(1, 0.5, 0.5, 0.5, "cm"),
+        panel.background = element_rect(fill = "transparent"),
+        plot.background = element_rect(colour = "transparent"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(size = 12),
+        legend.position = c(0.5, 1.08),
+        legend.direction = "horizontal",
+        legend.spacing.x = unit(0.1, "cm"),
+        legend.spacing.y = unit(0.15, "cm"),
+        legend.key.width = unit(0.5, "cm"),
+        legend.key.size = unit(1, "line"),
+        legend.key = element_blank(),
+        legend.text = element_text(size = 8),
+        legend.text.align = 0,
+        legend.box.just = "center",
+        legend.justification = c(0.5, 0.5),
+        legend.title.align = 0.5,
+        legend.background = element_rect(fill = "transparent", 
+                                         size = 0.5, 
+                                         linetype = "solid", 
+                                         colour = "transparent")) +
+  scale_fill_npg(name = NULL, 
+                 label = c(expression(italic("Allolobophora chlorotica    ")),
+                           expression(italic("Aporrectodea caliginosa    ")),
+                           expression(italic("Aporrectodea trapezoides    ")),
+                           expression(paste(italic("Diplocardia"), " sp.    ")),
+                           expression(italic("Lumbricus friendi    ")),
+                           expression(italic("Lumbricus rubellus    ")))) + 
+  guides(fill = guide_legend(nrow = 1))
+
+ggsave("Output/Figures/Layman.tiff", width = 9, height = 6, dpi = 600)
+
+```
+
+<br>
+
+# NMDS on the SI values and C:N ratios of earthworms 
+```{r NMDS}
+### Load the data
+Soil_data_by_plot <- readRDS("./Output/Data_clean/Soil_data_by_plot.rds")
+Earthworm_data_by_plot <- readRDS("./Output/Data_clean/Earthworm_data_by_plot.rds")
+
+
+### Background‐corrected earthworm d13C and d15N
+Earthworm_data_corrected <- Soil_data_by_plot %>% 
+  group_by(Plot) %>%
+  summarise_at(vars(starts_with("Mean")), mean, na.rm = T) %>%
+  right_join(Earthworm_data_by_plot, by = "Plot") %>% 
+  mutate(d15N_earthworm_correct = d15N_earthworm - Mean_d15N_soil,
+         d13C_earthworm_correct = d13C_earthworm - Mean_d13C_soil)
+
+
+### NMDS on SI values and C:N ratios
+NMDS_earthworm <- Earthworm_data_corrected %>%
+  select(d13C_earthworm_correct,          
+         d15N_earthworm_correct,
+         `C:N_earthworm`) %>%
+  metaMDS(distance = "eu", autotransform = FALSE)     # Euclidean distance used
+
+# Extract the site scores for plotting
+NMDS_score <- scores(NMDS_earthworm, display = "sites") %>%
+  as.data.frame() %>%
+  mutate(Species = Earthworm_data_corrected$Species)
+
+# NMDS plot
+ggplot(NMDS_score, aes(x = NMDS1, y = NMDS2, color = Species)) + 
+  geom_point(size = 1.5, alpha = 0.7, stroke = 1) +
+  theme(axis.text.x = element_text(size = 12, color = "black"),
+        axis.text.y = element_text(size = 12, color = "black"),
+        axis.title.x = element_text(size = 15, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 15, margin = margin(r = 8)),
+        plot.title = element_text(hjust = 0.5, size = 18),
+        plot.margin = rep(unit(0.05,"null"), 4),
+        panel.background = element_rect(fill = "transparent"),
+        plot.background = element_rect(colour = "transparent"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        legend.position = c(0.225, 0.825),
+        legend.spacing.x = unit(0.1, "cm"),
+        legend.spacing.y = unit(0.15, "cm"),
+        legend.key.width = unit(1.2, "cm"),
+        legend.key.size = unit(1, "line"),
+        legend.key = element_blank(),
+        legend.text = element_text(size = 7),
+        legend.text.align = 0,
+        legend.box.just = "center",
+        legend.justification = c(0.5, 0.5),
+        legend.title.align = 0.5,
+        legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "transparent")) +
+  stat_ellipse(type = "t", level = 0.5, size = 0.8) +
+  scale_color_npg(name = NULL, 
+                  label = c(expression(italic("Allolobophora chlorotica")),
+                            expression(italic("Aporrectodea caliginosa")),
+                            expression(italic("Aporrectodea trapezoides")),
+                            expression(paste(italic("Diplocardia"), " sp.")),
+                            expression(italic("Lumbricus friendi")),
+                            expression(italic("Lumbricus rubellus")))) +
+  scale_y_continuous(limits = c(-6, 6), breaks = seq(-5, 5, 2.5), labels = c("-5.0", "-2.5", "0.0", "2.5", "5.0"))
+
+ggsave("Output/Figures/NMDS.tiff", width = 6, height = 5, dpi = 600)
+
+```
+
+<br>
+
+# Relationship between earthworm and soil SI/C:N ratios across depth
+The models were fit using lmer() with "Plot" as random effects
+```{r lmer, out.width = "100%", fig.width = 8, fig.height = 8}
+### Load the data
+Soil_data_by_plot <- readRDS("./Output/Data_clean/Soil_data_by_plot.rds")
+Earthworm_data_by_plot <- readRDS("./Output/Data_clean/Earthworm_data_by_plot.rds")
+
+
+### Convert the soil data into wide format
+Soil_data_wide <- Soil_data_by_plot %>%
+  pivot_wider(id_cols = Plot, 
+              names_from = Depth, 
+              values_from = c("Mean_d15N_soil", "Mean_d13C_soil", "Mean_C:N_soil"))
+
+
+### Join the earthworm and soil data
+All_data <- left_join(Earthworm_data_by_plot, 
+                      Soil_data_wide,
+                      by = "Plot")
+
+
+### Fit the lmer models for each species
+lmer_out <- All_data %>%
+  group_by(Species) %>%
+  mutate_at(.vars = vars(starts_with("Mean_")), .funs = scale) %>%
+  nest() %>%
+  mutate(Mod_fit = map(data, function(x) {
+    mods <- list()
+    mods[[1]] <-
+      lmer(d13C_earthworm ~ `Mean_d13C_soil_0-2` + (1 |
+                                                      Plot),
+           data = x,
+           REML = FALSE)
+    mods[[2]] <-
+      lmer(d13C_earthworm ~ `Mean_d13C_soil_2-5` + (1 |
+                                                      Plot),
+           data = x,
+           REML = FALSE)
+    mods[[3]] <-
+      lmer(
+        d13C_earthworm ~ `Mean_d13C_soil_5-10` + (1 |
+                                                    Plot),
+        data = x,
+        REML = FALSE
+      )
+    mods[[4]] <-
+      lmer(
+        d13C_earthworm ~ `Mean_d13C_soil_10-20` + (1 |
+                                                     Plot),
+        data = x,
+        REML = FALSE
+      )
+    mods[[5]] <-
+      lmer(d13C_earthworm ~ `Mean_d15N_soil_0-2` + (1 |
+                                                      Plot),
+           data = x,
+           REML = FALSE)
+    mods[[6]] <-
+      lmer(d13C_earthworm ~ `Mean_d15N_soil_2-5` + (1 |
+                                                      Plot),
+           data = x,
+           REML = FALSE)
+    mods[[7]] <-
+      lmer(
+        d13C_earthworm ~ `Mean_d15N_soil_5-10` + (1 |
+                                                    Plot),
+        data = x,
+        REML = FALSE
+      )
+    mods[[8]] <-
+      lmer(
+        d13C_earthworm ~ `Mean_d15N_soil_10-20` + (1 |
+                                                     Plot),
+        data = x,
+        REML = FALSE
+      )
+    mods[[9]] <-
+      lmer(d13C_earthworm ~ `Mean_C:N_soil_0-2` + (1 |
+                                                     Plot),
+           data = x,
+           REML = FALSE)
+    mods[[10]] <-
+      lmer(d13C_earthworm ~ `Mean_C:N_soil_2-5` + (1 |
+                                                     Plot),
+           data = x,
+           REML = FALSE)
+    mods[[11]] <-
+      lmer(d13C_earthworm ~ `Mean_C:N_soil_5-10` + (1 |
+                                                      Plot),
+           data = x,
+           REML = FALSE)
+    mods[[12]] <-
+      lmer(
+        d13C_earthworm ~ `Mean_C:N_soil_10-20` + (1 |
+                                                    Plot),
+        data = x,
+        REML = FALSE
+      )
+    return(mods)
+  })) %>%
+  mutate(Mod_summary = map(Mod_fit, function(X) {
+    lapply(X, function(x) {
+      coef <- coef(x)$Plot[1, 2]
+      lower <- confint(x)[4, 1]
+      upper <- confint(x)[4, 2]
+      pval <- car::Anova(x)$`Pr(>Chisq)`
+      data.frame(
+        Beta = coef,
+        Lower = lower,
+        Upper = upper,
+        P_val = pval
+      )
+    })
+  }))
+
+lmer_out <- lmer_out %>%
+  mutate(Mod_summary_df = map(Mod_summary, function(x) {
+    df <- bind_rows(x) %>%
+      mutate(
+        Signif = ifelse(P_val < 0.05, "*", ""),
+        Var = factor(
+          rep(
+            c("Mean_d13C_soil", "Mean_d15N_soil", "Mean_C:N_soil"),
+            each = 4
+          ),
+          levels = c("Mean_d13C_soil", "Mean_d15N_soil", "Mean_C:N_soil"),
+          ordered = T
+        ),
+        Depth = factor(
+          rep(c("0-2", "2-5", "5-10", "10-20"), 3),
+          levels = c("0-2", "2-5", "5-10", "10-20"),
+          ordered = T
+        )
+      )
+  })) 
+
+
+### Plot the standardized coefficients
+lmer_out %>% select(Species, Mod_summary_df) %>%
+  unnest(cols = Mod_summary_df) %>%
+  ggplot(aes(x = fct_rev(Depth), y = Beta, color = Signif)) + 
+  geom_pointrange(aes(ymin = Lower, ymax = Upper)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey60") +
+  coord_flip() + 
+  facet_grid(Species ~ Var, 
+             labeller = labeller(Species = as_labeller(c(`Allolobophora chlorotica` = "italic(A.~chlorotica)",
+                                                         `Aporrectodea caliginosa` = "italic(A.~caliginosa)",
+                                                         `Aporrectodea trapezoides` = "italic(A.~trapezoides)",
+                                                         `Diplocardia sp.` = "italic(Diplocardia)~sp.",
+                                                         `Lumbricus friendi` = "italic(L.~friendi)",
+                                                         `Lumbricus rubellus` = "italic(L.~rubellus)"), label_parsed)  
+                                 
+                                 , Var = as_labeller(
+               c(`Mean_d13C_soil` = "delta^{13}*C", 
+                 `Mean_d15N_soil` = "delta^{15}*N",
+                 `Mean_C:N_soil` = "C:N~ratio"), label_parsed))) + 
+  labs(x = "Soil depth (cm)", y = expression(paste("Standardized coefficients (", beta, ")"))) + 
+  theme(axis.text.x = element_text(size = 12, color = "black"),
+        axis.text.y = element_text(size = 12, color = "black"),
+        axis.title.x = element_text(size = 15, margin = margin(t = 10)),
+        axis.title.y = element_text(size = 15, margin = margin(r = 8)),
+        plot.title = element_text(hjust = 0.5, size = 18),
+        plot.margin = margin(0.5, 0.5, 0.5, 0.5, "cm"),
+        panel.background = element_rect(fill = "transparent"),
+        plot.background = element_rect(colour = "transparent"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        strip.background.x = element_rect(fill = "white"),
+        strip.background.y = element_rect(fill = "grey90"),
+        strip.text.x = element_text(size = 15),
+        strip.text.y = element_text(size = 9),
+        legend.position = c(0.5, 1.08),
+        legend.direction = "horizontal",
+        legend.spacing.x = unit(0.1, "cm"),
+        legend.spacing.y = unit(0.15, "cm"),
+        legend.key.width = unit(0.5, "cm"),
+        legend.key.size = unit(1, "line"),
+        legend.key = element_blank(),
+        legend.text = element_text(size = 8),
+        legend.text.align = 0,
+        legend.box.just = "center",
+        legend.justification = c(0.5, 0.5),
+        legend.title.align = 0.5,
+        legend.background = element_rect(fill = "transparent", 
+                                         size = 0.5, 
+                                         linetype = "solid", 
+                                         colour = "transparent")) + 
+  scale_color_manual(values = c("black", "red"), guide = F)
+
+ggsave("Output/Figures/Beta_coef.tiff", width = 8, height = 8, dpi = 600)
+
+```
+
