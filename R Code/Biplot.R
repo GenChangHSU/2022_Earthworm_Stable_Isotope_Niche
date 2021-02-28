@@ -129,7 +129,7 @@ adjusted_data %>%
   stat_ellipse(aes(color = Species), type = "t", level = 0.5, size = 0.6) +
   facet_wrap(~Dataset, scales = "free_y") +
   geom_text(data = label_df2, aes(x = x, y = y, label = Label), size = 5) +
-  scale_color_npg(name = NULL, 
+  scale_color_brewer(name = NULL, palette = "Set1",
                   label = c(expression(italic("Amynthas hilgendorfi")),
                             expression(italic("Aporrectodea caliginosa")),
                             expression(italic("Eisenoides lonnbergi")),
