@@ -31,7 +31,7 @@ library(SIBER)
 all_data_clean <- readRDS("./Output/Data_clean/all_data_clean.rds")
 
 
-# Code start here ---------------------------------------------------------
+# Code starts here ---------------------------------------------------------
 
 ### Background-adjusted earthworm stable isotope values
 adjusted_data <- all_data_clean %>%

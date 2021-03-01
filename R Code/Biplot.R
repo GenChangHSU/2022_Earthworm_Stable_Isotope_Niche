@@ -54,7 +54,7 @@ mytheme <- theme(
       legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "transparent"))
   
 
-# Code start here ---------------------------------------------------------
+# Code starts here ---------------------------------------------------------
 
 ### Background-adjusted earthworm stable isotope values
 adjusted_data <- all_data_clean %>%

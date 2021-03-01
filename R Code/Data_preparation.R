@@ -27,7 +27,7 @@ SERC_raw <- read_xlsx("./data_raw/SERC_data.xlsx", sheet = 1)
 BARC_raw <- read_xlsx("./data_raw/BARC_data.xlsx", sheet = 1)
 
 
-# Code start here ---------------------------------------------------------
+# Code starts here ---------------------------------------------------------
 
 ### BiodiversiTREE_1 (excluding Plot 39 and 40)
 BiodiversiTREE_soil_clean1 <- BiodiversiTREE_soil_raw %>% 
