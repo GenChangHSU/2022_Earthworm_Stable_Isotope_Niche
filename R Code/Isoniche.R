@@ -6,9 +6,9 @@
 ## Date: 2021-02-26
 ##
 ## Description: 
-## 1. Compute the total niche areas, corrected standard ellipse areas (SEAc), 
-##    SEAs, and 95% ellipse areas for each species
-## 2. Calculate the percent overlap in SEAs and 95% ellipse areas between 
+## 1. Compute the total niche areas, corrected standard ellipses areas (SEAc), 
+##    SEAs, and 95% ellipses areas for each species
+## 2. Calculate the percent overlap in SEAs and 95% ellipses areas between 
 ##    species pairs. 
 ## 3. Test the differences in species isotopic niches using PERMANOVA and 
 ##    PERMADISP.
@@ -17,6 +17,7 @@
 ##
 ##
 ## ------------------------------------------------------------------------
+set.seed(123)
 
 
 # Libraries ---------------------------------------------------------------
@@ -52,15 +53,13 @@ adjusted_data <- all_data_clean %>%
   mutate(Dataset = factor(Dataset, levels = unique(Dataset), ordered = T))
 
 
-### Summary statistics of species isotopic niches by dataset
+### Summary statistics of species isotopic niches
 
 # A vector of the dataset names
 dataset_list <- unique(as.character(adjusted_data$Dataset))
 
 Isoniche_list <- lapply(dataset_list, function(dataset){
     
-  set.seed(123)  # For PERMANOVA and PERMADISP
-  
   # Create SIBER object
   SIBER_data <- adjusted_data %>% 
     filter(Dataset == dataset) %>%
@@ -96,7 +95,8 @@ Isoniche_list <- lapply(dataset_list, function(dataset){
     t() %>% 
     as.data.frame() %>%
     rownames_to_column(var = "Species") %>%
-    select(Species, TA, SEAc)
+    select(Species, TA, SEAc) %>%
+    mutate_if(is.numeric, round, digits = 3)
   
   # SEA overlap between species pairs
   SEA_overlap <- data.frame(
@@ -110,14 +110,15 @@ Isoniche_list <- lapply(dataset_list, function(dataset){
     select(-Ellipse1, -Ellipse2, -area.2) %>%
     rename(SEA = area.1,
            Area = overlap) %>%
-    mutate(Percent_overlap = Area/SEA) %>%
+    mutate(`Percent_overlap_%` = Area/SEA*100) %>%
     filter(Sp1 != Sp2) %>%
     rename(Species = Sp1) %>%
     group_by(Species) %>%
     rename(SEA_overlap_with = Sp2) %>%
-    nest(SEA_overlap = c(SEA_overlap_with, Area, Percent_overlap))
+    mutate_if(is.numeric, round, digits = 3) %>%
+    nest(SEA_overlap = c(SEA_overlap_with, Area, `Percent_overlap_%`))
   
-  # 95% ellipse area overlap between species pairs
+  # 95% ellipses area overlap between species pairs
   `95%_EA_overlap` <- data.frame(
     Sp1 = rep(Sp_names, each = length(Sp_names)),
     Sp2 = rep(Sp_names),
@@ -129,12 +130,13 @@ Isoniche_list <- lapply(dataset_list, function(dataset){
     select(-Ellipse1, -Ellipse2, -area.2) %>%
     rename(`95%_EA` = area.1,
            Area = overlap) %>%
-    mutate(Percent_overlap = Area/`95%_EA`) %>%
+    mutate(`Percent_overlap_%` = Area/`95%_EA`*100) %>%
     filter(Sp1 != Sp2) %>%
     rename(Species = Sp1) %>%
     group_by(Species) %>%
     rename(`95%_EA_overlap_with` = Sp2) %>%
-    nest(`95%_EA_overlap` = c(`95%_EA_overlap_with`, Area, Percent_overlap))
+    mutate_if(is.numeric, round, digits = 3) %>%
+    nest(`95%_EA_overlap` = c(`95%_EA_overlap_with`, Area, `Percent_overlap_%`))
   
   # PERMANOVA and PERMADISP tests for multivariate differences in species isoniches
   PERM_tests <- data.frame(
@@ -168,6 +170,7 @@ Isoniche_list <- lapply(dataset_list, function(dataset){
     rename(Species = Sp1) %>%
     group_by(Species) %>%
     rename(Test_with = Sp2) %>%
+    mutate_if(is.numeric, round, digits = 3) %>%
     nest(PERM_tests = c(Test_with, PERMANOVA_pval, PERMADISP_pval))
   
   # Combine all the results
@@ -184,9 +187,17 @@ Isoniche_list <- lapply(dataset_list, function(dataset){
 
 ### Convert the list into a dataframe
 Isoniche_df <- Isoniche_list %>% 
-  bind_rows(.id = "Dataset")
+  bind_rows(.id = "Dataset") 
 
 write_rds(Isoniche_df, "./Output/Data_clean/Isoniche.rds")
+
+
+
+
+
+
+
+
 
 
 

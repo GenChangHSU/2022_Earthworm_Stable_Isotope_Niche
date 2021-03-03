@@ -89,7 +89,7 @@ adjusted_data %>%
   labs(x = expression(paste(delta^{13}, "C (\u2030)", sep = "")), 
        y = expression(paste(delta^{15}, "N (\u2030)", sep = ""))) +
   
-  # 50% data ellipse using a multivariate t-distribution
+  # 50% data ellipses using a multivariate t-distribution
   stat_ellipse(aes(color = Species), type = "t", level = 0.5, size = 0.6) +
   facet_wrap(~Dataset, scales = "free_y") +
   geom_text(data = label_df1, aes(x = x, y = y, label = Label), size = 5) +
@@ -125,7 +125,7 @@ adjusted_data %>%
   labs(x = expression(paste(delta^{13}, "C (\u2030)", sep = "")), 
        y = expression(paste(delta^{15}, "N (\u2030)", sep = ""))) +
   
-  # 50% data ellipse using a multivariate t-distribution
+  # 50% data ellipses using a multivariate t-distribution
   stat_ellipse(aes(color = Species), type = "t", level = 0.5, size = 0.6) +
   facet_wrap(~Dataset, scales = "free_y") +
   geom_text(data = label_df2, aes(x = x, y = y, label = Label), size = 5) +
