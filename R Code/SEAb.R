@@ -7,7 +7,7 @@
 ##
 ## Description: 
 ## 1. Compute SEAb for each species and percent overlap in SEAb between species pairs.                 
-## 2. Create biplots with SEAs computed from Bayesian posterior draws. 
+##  
 ##
 ## Notes:
 ##
@@ -21,10 +21,42 @@ library(tidyverse)
 library(magrittr)
 library(SIBER)
 library(ellipse)
+library(ggsci)
+library(ggmcmc)
 
 
 # Import files ------------------------------------------------------------
 all_data_clean <- readRDS("./Output/Data_clean/all_data_clean.rds")
+
+
+# ggplot2 theme -----------------------------------------------------------
+mytheme <- theme(
+  axis.text.x = element_text(size = 12, color = "black"),
+  axis.text.y = element_text(size = 12, color = "black"),
+  axis.title.x = element_text(size = 15, margin = margin(t = 10)),
+  axis.title.y = element_text(size = 15, margin = margin(r = 5)),
+  plot.title = element_text(hjust = 0.5, size = 18),
+  plot.margin = margin(0.2, 0.05, 0.05, 0.05, "null"),
+  panel.background = element_rect(fill = "transparent"),
+  plot.background = element_rect(colour = "transparent"),
+  panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
+  panel.grid.major.x = element_blank(),
+  panel.grid.minor.x = element_blank(),
+  panel.grid.major.y = element_blank(),
+  panel.grid.minor.y = element_blank(),
+  strip.background = element_blank(),
+  strip.text = element_text(size = 12),
+  legend.spacing.x = unit(0.1, "cm"),
+  legend.spacing.y = unit(0.15, "cm"),
+  legend.key.width = unit(1.2, "cm"),
+  legend.key.size = unit(1, "line"),
+  legend.key = element_blank(),
+  legend.text = element_text(size = 7),
+  legend.text.align = 0,
+  legend.box.just = "center",
+  legend.justification = c(0.5, 0.5),
+  legend.title.align = 0.5,
+  legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "transparent"))
 
 
 # Code starts here ---------------------------------------------------------
@@ -87,28 +119,41 @@ SEAb_list <- lapply(dataset_list, function(dataset) {
 
   # Bayesian model setup
   parms <- list()
-  parms$n.iter <- 2*10^4    # Number of iterations
-  parms$n.burnin <- 1*10^3  # Burn-in
-  parms$n.thin <- 10        # Thinning
-  parms$n.chains <- 2       # Number of MCMC chains
-
-  # Prior
+  parms$n.iter <- 20000  # Number of iterations
+  parms$n.burnin <- 1000  # Burn-in
+  parms$n.thin <- 10  # Thinning
+  parms$n.chains <- 2  # Number of MCMC chains
+  parms$save.output <- TRUE  # Save jags output for diagnostics
+  parms$save.dir <- paste0(getwd(), "/", "Output/Jags")  # Folder to save jags output
+  
+  # Prior (the inverse Wishart prior)
   priors <- list()
   priors$R <- 1*diag(2)
   priors$k <- 2
-  priors$tau.mu <- 1.0E-3
+  priors$tau.mu <- 0.001
 
   # Fit the model
   ellipses.posterior <- siberMVN(SIBER_data, parms, priors)
   SEA.B <- siberEllipses(ellipses.posterior) %>%
     as.data.frame() %>%
     `names<-`(Sp_names)
-
+  
+  # Model diagnostics
+  all.files <- dir(parms$save.dir, full.names = TRUE)
+  model.files <- all.files[grep("jags_output", all.files)]
+  map(1:length(Sp_names), function(a){
+    sp <- Sp_names[a]
+    path <- paste0("./Output/Diagnostics/", dataset, "_", sp, ".pdf")
+    load(model.files[a]) 
+    S <- ggs(output)
+    ggmcmc(S, plot = c("traceplot", "geweke"), param_page = 2, file = path)
+  })
+  
   # Compute standard ellipses data points from the posterior draws (for plotting)
   SEAb_points <- map(ellipses.posterior, function(x) {
-    sigma <- matrix(apply(x[, 1:4], 2, mean), 2, 2)
-    mu <- apply(x[, 5:6], 2, mean)
-    sea <- ellipse(sigma, mu, level = pchisq(1, 2), npoints = 500)
+    sigma <- matrix(apply(x[, 1:4], 2, mean), 2, 2) # Covariance matrix of the ellipses
+    mu <- apply(x[, 5:6], 2, mean)  # Center of the ellipses
+    sea <- ellipse(sigma, centre = mu, level = pchisq(1, 2), npoints = 500)  # Standard ellipses: pchisq(1, 2)
     return(sea)
   }) %>%
     `names<-`(Sp_names)
@@ -138,9 +183,9 @@ SEAb_list <- lapply(dataset_list, function(dataset) {
     bind_cols(., map2(.x = .$Ellipse1, .y = .$Ellipse2, function(x, y) {
       bayesianOverlap(x, y,
         ellipses.posterior,
-        draws = 10,
+        draws = 100,  # Use first 100 posterior draws to calculate overlap
         p.interval = NULL,
-        n = 100
+        n = 500  # 500 points to form the ellipses
       ) %>%
         apply(., MARGIN = 2, FUN = function(z) mean(z)) %>%
         t() %>%
@@ -166,12 +211,6 @@ SEAb_list <- lapply(dataset_list, function(dataset) {
     left_join(SEAb_overlap, by = "Species") %>%
     left_join(SEAb_points, by = "Species")
 
-  
-  # 1. parameter settings
-  # 2. prior distribution
-  # 3. convergence diagnostics
-  # 4. number of draws for bayesianOverlap()
-  
   return(SEAb_all)
   
 }) %>% 
@@ -183,23 +222,5 @@ SEAb_df <- SEAb_list %>%
   bind_rows(.id = "Dataset") 
 
 write_rds(SEAb_df, "./Output/Data_clean/SEAb.rds")
-
-
-### Biplots with SEAb
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
