@@ -8,8 +8,7 @@
 ## Description: 
 ## 1. Create biplots with SEAbs.
 ## 2. Visualize species' SEAbs using dot charts with line ranges. 
-## 3. Visualize percent overlap in SEAb between species pairs using bubble 
-##    charts.
+## 3. Visualize percent overlap in SEAb between species pairs using heatmaps.
 ##
 ## Notes:
 ##
@@ -267,7 +266,38 @@ SEAb_df %>%
 ggsave("Output/Figures/SEAb_dotchart2.tiff", width = 8, height = 4, dpi = 600)
 
 
-### SEAb percent overlap bubble charts
+### SEAb percent overlap heatmap
+SEAb_df %>% filter(Dataset == "BiodiversiTREE_1") %>%
+  select(1:3, SEAb_overlap) %>%
+  unnest(cols = SEAb_overlap) %>%
+  ggplot() +
+  geom_tile(aes(x = Species, y = fct_rev(SEAb_overlap_with), fill = `Percent_overlap_%`)) + 
+  scale_x_discrete(position = "top", expand = c(0, 0),
+                   label = c(expression(italic("Allolobophora \n   chlorotica")),
+                                 expression(italic("Aporrectodea \n   caliginosa")),
+                                 expression(italic("Aporrectodea \n  trapezoides")),
+                                 expression(italic("Lumbricus \n   friendi")),
+                                 expression(italic("Lumbricus \n  rubellus")))) +
+  scale_y_discrete(expand = c(0, 0), 
+                   label = rev(c(expression(italic("Allolobophora \n   chlorotica")),
+                             expression(italic("Aporrectodea \n   caliginosa")),
+                             expression(italic("Aporrectodea \n  trapezoides")),
+                             expression(italic("Lumbricus \n   friendi")),
+                             expression(italic("Lumbricus \n  rubellus"))))) +
+  scale_fill_continuous(trans = 'reverse', name = "Percent (%)") + 
+  guides(fill = guide_colorbar(reverse = T)) + 
+  labs(x = expression(paste(SEA[b], " (", "\u2030"^2, ") of")), 
+       y = "Overlapping with") +
+  mytheme + 
+  theme(axis.title.x.top = element_text(size = 15, margin = margin(b = 15)),
+        axis.title.y.left = element_text(size = 17, margin = margin(r = 8)),
+        axis.text.x = element_text(size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black", vjust = 1),
+        plot.margin = margin(0.05, 0.05, 0.05, 0.05, "null"),
+        legend.key.width = unit(0.7, "cm"),
+        legend.text = element_text(size = 8))
+
+ggsave("Output/Figures/Overlap.tiff", width = 8, height = 5.5, dpi = 600)
 
 
 
