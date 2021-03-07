@@ -1,5 +1,5 @@
 ## ------------------------------------------------------------------------
-## Title: Bayesain Standard Ellipses Areas and Overlap between Species
+## Title: Bayesian Standard Ellipses Areas and Overlap between Species
 ##
 ## Author: Gen-Chang Hsu
 ##
@@ -27,36 +27,6 @@ library(ggmcmc)
 
 # Import files ------------------------------------------------------------
 all_data_clean <- readRDS("./Output/Data_clean/all_data_clean.rds")
-
-
-# ggplot2 theme -----------------------------------------------------------
-mytheme <- theme(
-  axis.text.x = element_text(size = 12, color = "black"),
-  axis.text.y = element_text(size = 12, color = "black"),
-  axis.title.x = element_text(size = 15, margin = margin(t = 10)),
-  axis.title.y = element_text(size = 15, margin = margin(r = 5)),
-  plot.title = element_text(hjust = 0.5, size = 18),
-  plot.margin = margin(0.2, 0.05, 0.05, 0.05, "null"),
-  panel.background = element_rect(fill = "transparent"),
-  plot.background = element_rect(colour = "transparent"),
-  panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
-  panel.grid.major.x = element_blank(),
-  panel.grid.minor.x = element_blank(),
-  panel.grid.major.y = element_blank(),
-  panel.grid.minor.y = element_blank(),
-  strip.background = element_blank(),
-  strip.text = element_text(size = 12),
-  legend.spacing.x = unit(0.1, "cm"),
-  legend.spacing.y = unit(0.15, "cm"),
-  legend.key.width = unit(1.2, "cm"),
-  legend.key.size = unit(1, "line"),
-  legend.key = element_blank(),
-  legend.text = element_text(size = 7),
-  legend.text.align = 0,
-  legend.box.just = "center",
-  legend.justification = c(0.5, 0.5),
-  legend.title.align = 0.5,
-  legend.background = element_rect(fill = "transparent", size = 0.5, linetype = "solid", colour = "transparent"))
 
 
 # Code starts here ---------------------------------------------------------
@@ -153,7 +123,7 @@ SEAb_list <- lapply(dataset_list, function(dataset) {
   SEAb_points <- map(ellipses.posterior, function(x) {
     sigma <- matrix(apply(x[, 1:4], 2, mean), 2, 2) # Covariance matrix of the ellipses
     mu <- apply(x[, 5:6], 2, mean)  # Center of the ellipses
-    sea <- ellipse(sigma, centre = mu, level = pchisq(1, 2), npoints = 500)  # Standard ellipses: pchisq(1, 2)
+    sea <- ellipse(sigma, centre = mu, level = pchisq(1, 2), npoints = 100)  # Standard ellipses: pchisq(1, 2)
     return(sea)
   }) %>%
     `names<-`(Sp_names)
@@ -185,7 +155,7 @@ SEAb_list <- lapply(dataset_list, function(dataset) {
         ellipses.posterior,
         draws = 100,  # Use first 100 posterior draws to calculate overlap
         p.interval = NULL,
-        n = 500  # 500 points to form the ellipses
+        n = 100  # 500 points to form the ellipses
       ) %>%
         apply(., MARGIN = 2, FUN = function(z) mean(z)) %>%
         t() %>%
