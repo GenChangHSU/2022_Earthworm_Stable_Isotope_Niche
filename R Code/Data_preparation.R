@@ -21,10 +21,10 @@ library(readxl)
 
 
 # Import files ------------------------------------------------------------
-BiodiversiTREE_worm_raw <- read_xlsx("./data_raw/BiodiversiTREE_data.xlsx", sheet = 1)
-BiodiversiTREE_soil_raw <- read_xlsx("./data_raw/BiodiversiTREE_data.xlsx", sheet = 2)
-SERC_raw <- read_xlsx("./data_raw/SERC_data.xlsx", sheet = 1)
-BARC_raw <- read_xlsx("./data_raw/BARC_data.xlsx", sheet = 1)
+BiodiversiTREE_worm_raw <- read_xlsx("./Data_raw/BiodiversiTREE_data.xlsx", sheet = 1)
+BiodiversiTREE_soil_raw <- read_xlsx("./Data_raw/BiodiversiTREE_data.xlsx", sheet = 2)
+SERC_raw <- read_xlsx("./Data_raw/SERC_data.xlsx", sheet = 1)
+BARC_raw <- read_xlsx("./Data_raw/BARC_data.xlsx", sheet = 1)
 
 
 # Code starts here ---------------------------------------------------------
