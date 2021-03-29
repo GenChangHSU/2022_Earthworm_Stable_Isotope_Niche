@@ -21,6 +21,7 @@ library(tidyverse)
 library(magrittr)
 library(SIBER)
 library(ellipse)
+library(coda)
 library(ggsci)
 library(ggmcmc)
 
@@ -139,8 +140,8 @@ SEAb_list <- lapply(dataset_list, function(dataset) {
       SEAb_mean = mean(SEAb),
       SEAb_sd = sd(SEAb),
       SEAb_mode = quantile(SEAb, 0.5),
-      `SEAb_2.5%` = quantile(SEAb, 0.025),
-      `SEAb_97.5%` = quantile(SEAb, 0.975)
+      `SEAb_hdr_lower` = HPDinterval(as.mcmc(SEAb), 0.95)[1],
+      `SEAb_hdr_upper` = HPDinterval(as.mcmc(SEAb), 0.95)[2]
     )
 
   # SEAb overlap
@@ -155,7 +156,7 @@ SEAb_list <- lapply(dataset_list, function(dataset) {
         ellipses.posterior,
         draws = 100,  # Use first 100 posterior draws to calculate overlap
         p.interval = NULL,
-        n = 100  # 500 points to form the ellipses
+        n = 100  # 100 points to form the ellipses
       ) %>%
         apply(., MARGIN = 2, FUN = function(z) mean(z)) %>%
         t() %>%
@@ -192,5 +193,6 @@ SEAb_df <- SEAb_list %>%
   bind_rows(.id = "Dataset") 
 
 write_rds(SEAb_df, "./Output/Data_clean/SEAb.rds")
+
 
 

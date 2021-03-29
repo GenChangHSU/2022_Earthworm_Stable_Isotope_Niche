@@ -55,7 +55,7 @@ BiodiversiTREE_clean1 <- BiodiversiTREE_soil_clean1 %>%
     x[1]*0.4 + x[2]*0.6  # weighted mean by depth
   }) %>%
   right_join(BiodiversiTREE_worm_clean1, by = "Plot") %>%
-  mutate(Dataset = "BiodiversiTREE_1") %>%
+  mutate(Dataset = "BDTR1") %>%
   mutate(Plot = as.character(Plot)) %>%
   select(Dataset, Plot, Species, d13C_worm, d15N_worm, d13C_soil, d15N_soil)
 
@@ -86,7 +86,7 @@ BiodiversiTREE_clean2 <- BiodiversiTREE_soil_clean2 %>%
     x[1]*0.4 + x[2]*0.6  # weighted mean by depth
   }) %>%
   right_join(BiodiversiTREE_worm_clean2, by = "Plot") %>%
-  mutate(Dataset = "BiodiversiTREE_2") %>%
+  mutate(Dataset = "BDTR2") %>%
   mutate(Plot = as.character(Plot)) %>%
   select(Dataset, Plot, Species, d13C_worm, d15N_worm, d13C_soil, d15N_soil)
 
@@ -130,7 +130,7 @@ SERC_2011_soil_clean <- SERC_raw %>%
 
 SERC_2011_clean <- SERC_2011_worm_clean %>%
   left_join(SERC_2011_soil_clean, by = "Plot") %>%
-  mutate(Dataset = "SERC_2011") %>%
+  mutate(Dataset = "SERC1") %>%
   select(Dataset, Plot, Species, d13C_worm, d15N_worm, d13C_soil, d15N_soil)
 
 
@@ -153,7 +153,7 @@ SERC_2013_soil_clean <- SERC_raw %>%
 
 SERC_2013_clean <- SERC_2013_worm_clean %>%
   left_join(SERC_2013_soil_clean, by = "Plot") %>%
-  mutate(Dataset = "SERC_2013") %>%
+  mutate(Dataset = "SERC2") %>%
   select(Dataset, Plot, Species, d13C_worm, d15N_worm, d13C_soil, d15N_soil)
 
 
@@ -179,7 +179,7 @@ all_data_clean <- bind_rows(BiodiversiTREE_clean1,
                                     "Eisenoides lonnbergi",
                                     "Lumbricus rubellus",
                                     "Lumbricus terrestris",
-                                    "Amynthas hilgendorfi")))
+                                    "Metaphire hilgendorfi")))
 
 write_rds(all_data_clean, "./Output/Data_clean/all_data_clean.rds")
 
