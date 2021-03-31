@@ -283,38 +283,21 @@ P_legend <-
   unnest(cols = SEAb_overlap) %>%
   ggplot() +
   geom_tile(aes(x = Species, y = SEAb_overlap_with, fill = `Percent_overlap_%`)) + 
-  scale_x_discrete(expand = c(0, 0),
-                   label = c(expression(italic("Allolobophora \n   chlorotica")),
-                             expression(italic("Aporrectodea \n   caliginosa")),
-                             expression(italic("Aporrectodea \n  trapezoides")),
-                             expression(italic("Lumbricus \n   friendi")),
-                             expression(italic("Lumbricus \n  rubellus")))) +
-  scale_y_discrete(expand = c(0, 0), 
-                   label = c(expression(italic("Allolobophora \n   chlorotica")),
-                             expression(italic("Aporrectodea \n   caliginosa")),
-                             expression(italic("Aporrectodea \n  trapezoides")),
-                             expression(italic("Lumbricus \n   friendi")),
-                             expression(italic("Lumbricus \n  rubellus")))) +
   scale_fill_gradientn(colors = heatmap_pal,
                        values = c(0, 0.3, 0.6, 0.9, 1.0),
                        name = "Percent (%)",
                        limits = c(0, 100),
                        breaks = c(20, 40, 60, 80)) +
-  labs(x = expression(paste(SEA[b], " (", "\u2030"^2, ") of")), 
-       y = "Overlapped by",
-       title = "BDTR1",
-       subtitle = "(a)") +
-  coord_fixed(ratio = 1) +
-  mytheme + 
-  theme(axis.title.y.left = element_text(size = 17, margin = margin(r = 8)),
-        axis.text.x = element_text(size = 10, color = "black", vjust = 1, margin = margin(12, 0, 0, 0)),
-        axis.text.y = element_text(size = 10, color = "black", vjust = 0.75),
-        plot.margin = margin(0.05, 0.05, 0.05, 0.05, "null"),
-        legend.key.width = unit(0.7, "cm"),
-        legend.title = element_text(margin = margin(0, 0, 3, -10)),
-        legend.text = element_text(size = 8),
-        plot.subtitle = element_text(size = 13),
-        plot.title = element_text(size = 18, hjust = 0.5, vjust = -4.5))
+  guides(fill = guide_colorbar(title.position = "top")) +
+  theme(legend.direction = "horizontal",
+        legend.title = element_text(size = 15, margin = margin(0, 0, 2, 0), hjust = 0.5),
+        legend.text = element_text(size = 13, margin = margin(0, 0, 0, 3), hjust = 0.5),
+        legend.key.width = unit(1.33, "cm"),
+        legend.key.height = unit(1, "cm"),
+        legend.box = "horizontal",
+        legend.box.just = "center",
+        legend.justification = c(0.5, 0.5),
+        legend.background = element_blank())
 
 legend <- get_legend(P_legend) %>% as_ggplot()
 
@@ -345,20 +328,20 @@ P1 <-
                        limits = c(0, 100),
                        breaks = c(20, 40, 60, 80),
                        guide = F) +
-  labs(x = expression(paste(SEA[b], " (", "\u2030"^2, ") of")), 
-       y = "Overlapped by",
+  labs(x = "Species A", 
+       y = "Species B",
        title = "BDTR1",
        subtitle = "(a)") +
   coord_fixed(ratio = 1) +
   mytheme + 
-  theme(axis.title.x = element_text(size = 15, margin = margin(t = -22)),
-        axis.title.y.left = element_text(size = 15, margin = margin(r = 8)),
-        axis.text.x = element_text(size = 10, color = "black", 
+  theme(axis.title.x = element_text(size = 15, margin = margin(t = -18)),
+        axis.title.y.left = element_text(size = 15, margin = margin(r = 6)),
+        axis.text.x = element_text(size = 11, color = "black", 
                                    vjust = 1, angle = 30,
-                                   margin = margin(20, 0, 0, 0)),
-        axis.text.y = element_text(size = 10, color = "black", 
+                                   margin = margin(23, 0, 0, 0)),
+        axis.text.y = element_text(size = 11, color = "black", 
                                    vjust = 0.5, hjust = 1,
-                                   margin = margin(0, 0, 0, 0),
+                                   margin = margin(0, -3, 0, 0),
                                    angle = 30),
         plot.margin = margin(0.05, 0.05, 0.05, 0.05, "null"),
         legend.key.width = unit(0.7, "cm"),
@@ -393,20 +376,20 @@ P2 <-
                        limits = c(0, 100),
                        breaks = c(20, 40, 60, 80),
                        guide = F) +
-  labs(x = expression(paste(SEA[b], " (", "\u2030"^2, ") of")), 
-       y = "Overlapped by",
+  labs(x = "Species A", 
+       y = "Species B",
        title = "BDTR2",
        subtitle = "(b)") +
   coord_fixed(ratio = 1) +
   mytheme + 
-  theme(axis.title.x = element_text(size = 15, margin = margin(t = -22)),
-        axis.title.y.left = element_text(size = 15, margin = margin(r = 8)),
-        axis.text.x = element_text(size = 10, color = "black", 
+  theme(axis.title.x = element_text(size = 15, margin = margin(t = -18)),
+        axis.title.y.left = element_text(size = 15, margin = margin(r = 6)),
+        axis.text.x = element_text(size = 11, color = "black", 
                                    vjust = 1, angle = 30,
-                                   margin = margin(20, 0, 0, 0)),
-        axis.text.y = element_text(size = 10, color = "black", 
+                                   margin = margin(23, 0, 0, 0)),
+        axis.text.y = element_text(size = 11, color = "black", 
                                    vjust = 0.5, hjust = 1,
-                                   margin = margin(0, 0, 0, 0),
+                                   margin = margin(0, -3, 0, 0),
                                    angle = 30),
         plot.margin = margin(0.05, 0.05, 0.05, 0.05, "null"),
         legend.key.width = unit(0.7, "cm"),
@@ -441,35 +424,113 @@ P3 <-
                        limits = c(0, 100),
                        breaks = c(20, 40, 60, 80),
                        guide = F) +
-  labs(x = expression(paste(SEA[b], " (", "\u2030"^2, ") of")), 
-       y = "Overlapped by",
+  labs(x = "Species A", 
+       y = "Species B",
        title = "BARC",
        subtitle = "(c)") +
   coord_fixed(ratio = 1) +
   mytheme + 
-  theme(axis.title.x = element_text(size = 15, margin = margin(t = -22)),
-        axis.title.y.left = element_text(size = 15, margin = margin(r = 8)),
-        axis.text.x = element_text(size = 10, color = "black", 
+  theme(axis.title.x = element_text(size = 15, margin = margin(t = -18)),
+        axis.title.y.left = element_text(size = 15, margin = margin(r = 6)),
+        axis.text.x = element_text(size = 11, color = "black", 
                                    vjust = 1, angle = 30,
-                                   margin = margin(20, 0, 0, 0)),
-        axis.text.y = element_text(size = 10, color = "black", 
+                                   margin = margin(23, 0, 0, 0)),
+        axis.text.y = element_text(size = 11, color = "black", 
                                    vjust = 0.5, hjust = 1,
-                                   margin = margin(0, 0, 0, 0),
+                                   margin = margin(0, -3, 0, 0),
                                    angle = 30),
         plot.margin = margin(0.05, 0.05, 0.05, 0.05, "null"),
         legend.key.width = unit(0.7, "cm"),
         legend.text = element_text(size = 8),
         plot.subtitle = element_text(size = 15),
-        plot.title = element_text(size = 16, hjust = 0.5, vjust = -5))
+        plot.title = element_text(size = 18, hjust = 0.5, vjust = -4.5))
 
-# Layout the plots
+# Layout the plots with different alternatives of the diagonals
+# 1. Blank
 ggdraw() + 
-  draw_plot(P1, x = -0.01, y = 0, width = 0.41, height = 1) + 
-  draw_plot(P2, x = 0.39, y = 0, width = 0.41, height = 1) + 
-  draw_plot(P3, x = 0.69, y = 0.2, width = 0.41, height = 0.47) + 
-  draw_plot(legend, x = 0.86, y = 0.65, width = 0.1, height = 0.2)
+  draw_plot(P1, x = -0.01, y = 0, width = 0.4, height = 1) + 
+  draw_plot(P2, x = 0.38, y = 0, width = 0.4, height = 1) + 
+  draw_plot(P3, x = 0.69, y = 0.42, width = 0.4, height = 0.52) + 
+  draw_plot(legend, x = 0.716, y = 0.1675, width = 0.35, height = 0.25)
 
-ggsave("Output/Figures/Overlap.tiff", width = 13.5, height = 6.5, dpi = 600)
+ggsave("Output/Figures/Overlap_blank.tiff", width = 13, height = 6, dpi = 600)
+
+# Grey fill
+ggdraw() + 
+  draw_plot(P1 + geom_tile(data = data.frame(x = 1:5, y = 1:5),
+                           aes(x = x, y = y), 
+                           fill = "grey90"), 
+            x = -0.01, y = 0, width = 0.4, height = 1) + 
+  draw_plot(P2 + geom_tile(data = data.frame(x = 1:5, y = 1:5),
+                           aes(x = x, y = y), 
+                           fill = "grey90"), 
+            x = 0.38, y = 0, width = 0.4, height = 1) + 
+  draw_plot(P3 + geom_tile(data = data.frame(x = 1:2, y = 1:2),
+                           aes(x = x, y = y), 
+                           fill = "grey90"), 
+            x = 0.69, y = 0.42, width = 0.4, height = 0.52) + 
+  draw_plot(legend, x = 0.716, y = 0.1675, width = 0.35, height = 0.25)
+
+ggsave("Output/Figures/Overlap_grey.tiff", width = 13, height = 6, dpi = 600)
+
+# 3. NA labels
+ggdraw() + 
+  draw_plot(P1 + geom_text(data = data.frame(x = 1:5, y = 1:5),
+                           aes(x = x, y = y), 
+                           label = "NA", 
+                           color = "grey", 
+                           size = 5), 
+            x = -0.01, y = 0, width = 0.4, height = 1) + 
+  draw_plot(P2 + geom_text(data = data.frame(x = 1:5, y = 1:5),
+                           aes(x = x, y = y), 
+                           label = "NA", 
+                           color = "grey", 
+                           size = 5), 
+            x = 0.38, y = 0, width = 0.4, height = 1) + 
+  draw_plot(P3 + geom_text(data = data.frame(x = 1:2, y = 1:2),
+                           aes(x = x, y = y), 
+                           label = "NA", 
+                           color = "grey", 
+                           size = 5), 
+            x = 0.69, y = 0.42, width = 0.4, height = 0.52) + 
+  draw_plot(legend, x = 0.716, y = 0.1675, width = 0.35, height = 0.25)
+
+ggsave("Output/Figures/Overlap_NA.tiff", width = 13, height = 6, dpi = 600)
+
+# 4. Line segments
+ggdraw() + 
+  draw_plot(P1 + geom_segment(data = data.frame(x = seq(1.5, 5.5, 1), 
+                                                y = seq(0.5, 4.5, 1), 
+                                                xend = seq(0.5, 4.5, 1),
+                                                yend = seq(1.5, 5.5, 1)),
+                              aes(x = x, y = y, xend = xend, yend = yend), 
+                              color = "grey", size = 0.6), 
+            x = -0.01, y = 0, width = 0.4, height = 1) + 
+  draw_plot(P2 + geom_segment(data = data.frame(x = seq(1.5, 5.5, 1), 
+                                                y = seq(0.5, 4.5, 1), 
+                                                xend = seq(0.5, 4.5, 1),
+                                                yend = seq(1.5, 5.5, 1)),
+                              aes(x = x, y = y, xend = xend, yend = yend), 
+                              color = "grey", size = 0.6) , 
+            x = 0.38, y = 0, width = 0.4, height = 1) + 
+  draw_plot(P3 + geom_segment(data = data.frame(x = seq(1.5, 2.5, 1), 
+                                                y = seq(0.5, 1.5, 1), 
+                                                xend = seq(0.5, 1.5, 1),
+                                                yend = seq(1.5, 2.5, 1)),
+                              aes(x = x, y = y, xend = xend, yend = yend), 
+                              color = "grey", size = 0.6), 
+            x = 0.69, y = 0.42, width = 0.4, height = 0.52) + 
+  draw_plot(legend, x = 0.716, y = 0.1675, width = 0.35, height = 0.25)
+
+ggsave("Output/Figures/Overlap_segments.tiff", width = 13, height = 6, dpi = 600)
+
+
+
+
+
+
+
+
 
 
 
