@@ -1,0 +1,13 @@
+Depth,Block1,Block2,d13C_perm,d15N_perm
+0-2,Block1,Block2,0.312,0.195
+0-2,Block1,Block4,0.027,0.192
+0-2,Block1,Block3,0.157,0.314
+0-2,Block2,Block4,0.037,0.417
+0-2,Block2,Block3,0.462,0.138
+0-2,Block4,Block3,0.008,0.143
+2_5,Block1,Block2,0.269,0.797
+2_5,Block1,Block4,0.024,0.26
+2_5,Block1,Block3,0.045,0.311
+2_5,Block2,Block4,0.042,0.187
+2_5,Block2,Block3,0.576,0.213
+2_5,Block4,Block3,0.024,0.229

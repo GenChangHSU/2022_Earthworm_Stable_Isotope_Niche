@@ -1,0 +1,20 @@
+Dataset,Species,SEAb_mean,SEAb_sd,SEAb_mode,SEAb_hdr_lower,SEAb_hdr_upper
+BDTR1,Allolobophora chlorotica,14.91,6.11,13.57,6.20,26.72
+BDTR1,Aporrectodea caliginosa,5.35,1.44,5.11,2.96,8.22
+BDTR1,Aporrectodea trapezoides,6.53,1.90,6.19,3.44,10.32
+BDTR1,Lumbricus friendi,8.90,1.78,8.69,5.85,12.55
+BDTR1,Lumbricus rubellus,10.94,2.47,10.59,6.66,15.90
+BDTR2,Allolobophora chlorotica,5.85,2.41,5.33,2.63,10.74
+BDTR2,Aporrectodea caliginosa,11.15,6.21,9.58,3.36,23.07
+BDTR2,Aporrectodea trapezoides,3.25,1.15,3.02,1.49,5.56
+BDTR2,Lumbricus friendi,7.30,2.92,6.66,3.10,13.04
+BDTR2,Lumbricus rubellus,7.18,2.86,6.58,3.10,13.07
+BARC,Aporrectodea caliginosa,3.04,1.14,2.80,1.30,5.32
+BARC,Aporrectodea trapezoides,4.17,1.30,3.92,2.13,6.78
+SERC1,Aporrectodea caliginosa,0.42,0.13,0.39,0.21,0.67
+SERC1,Eisenoides lonnbergi,1.31,0.36,1.24,0.70,2.02
+SERC1,Lumbricus rubellus,0.27,0.08,0.26,0.14,0.42
+SERC1,Octolasion cyaneum,0.64,0.22,0.60,0.29,1.07
+SERC2,Eisenoides lonnbergi,2.21,0.59,2.11,1.21,3.38
+SERC2,Lumbricus rubellus,0.98,0.33,0.92,0.49,1.65
+SERC2,Metaphire hilgendorfi,4.25,1.02,4.11,2.53,6.32
