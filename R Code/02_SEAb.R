@@ -37,8 +37,8 @@ adjusted_data <- all_data_clean %>%
   
   # Compute the differences between plot-level soil SI values and 
   # site-level (dataset-level) grand mean values (i.e., background references)
-  mutate(d13C_soil_grand_mean = mean(d13C_soil_0_5),      
-         d15N_soil_grand_mean = mean(d15N_soil_0_5)) %>%
+  mutate(d13C_soil_grand_mean = mean(unique(d13C_soil_0_5)),      
+         d15N_soil_grand_mean = mean(unique(d15N_soil_0_5))) %>%
   
   # Adjust the earthworm SI values by shifting back the differences between 
   # plot-level soil SI values and grand mean values 

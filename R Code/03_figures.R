@@ -1,16 +1,19 @@
 ## -----------------------------------------------------------------------------
-## Title: Visualization of Species' SEAb and Pairwise Percentage SEAb Overlaps
+## Title: Visualization of earthworm and soil stable isotope signatures
 ##
 ## Author: Gen-Chang Hsu
 ##
 ## Date: 2021-07-13
 ##
 ## Description: 
-## 1. Stable isotope scatterplots along with the SEAbs of earthworm species and soil mean and se
-## 2. Dot charts of SEAbs. 
-## 3. Heatmaps of Pairwise Percentage SEAb overlaps.
-## 4. Soil line range plot
-## 5. Species big delta plot
+## Section 1. Stable isotope scatterplots: SEAb ellipses of earthworm species + 
+##            isotope signature of 0-5 and 5-10 cm soil depth (mean and SE).
+## Section 2. Dot charts (mean and 95% HDI) of SEAbs of earthworm species. 
+## Section 3. Heatmaps of pairwise percentage SEAb overlaps.
+## Section 4. Dot charts (mean and SE) of soil isotope signature for each study site. 
+## Section 5. Dot charts (mean and SE) of the big deltas of earthworm species 
+##            (pooled across all sites).
+## 
 ## Notes:
 ##
 ## -----------------------------------------------------------------------------
@@ -28,6 +31,7 @@ library(cowplot)
 # Import files -----------------------------------------------------------------
 all_data_clean <- readRDS("./Output/Data_clean/all_data_clean.rds")
 SEAb_df <- readRDS("./Output/Data_clean/SEAb.rds")
+all_soil_clean <- readRDS("./Output/Data_clean/all_soil_clean.rds")
 
 
 # ggplot2 theme ----------------------------------------------------------------
@@ -62,14 +66,15 @@ mytheme <- theme(
 
 ############################### Code starts here ###############################
 
+# Section 1 ---------------------------------------------------------------
 ### Background-adjusted earthworm stable isotope values
 adjusted_data <- all_data_clean %>%
   group_by(Dataset) %>%
   
   # Compute the differences between plot-level soil SI values and 
   # site-level (dataset-level) grand mean values (i.e., background references)
-  mutate(d13C_soil_grand_mean = mean(d13C_soil_0_5),      
-         d15N_soil_grand_mean = mean(d15N_soil_0_5)) %>%
+  mutate(d13C_soil_grand_mean = mean(unique(d13C_soil_0_5)),      
+         d15N_soil_grand_mean = mean(unique(d15N_soil_0_5))) %>%
   
   # Adjust the earthworm SI values by shifting back the differences between 
   # plot-level soil SI values and grand mean values 
@@ -81,8 +86,7 @@ adjusted_data <- all_data_clean %>%
   mutate(Dataset = factor(Dataset, levels = unique(Dataset), ordered = T))
 
 
-### 1. Stable isotope scatterplots along with the SEAbs of earthworm species
-# Create a fixed color palette for all species across the sites
+### Create a fixed color palette for all species across the sites
 Species_names1 <- adjusted_data %>% 
   filter(Dataset %in% c("BDTR1", "BDTR2", "BARC")) %>%
   .$Species %>%
@@ -108,7 +112,35 @@ Pallete_colors <- c("#FFD966",
 
 pal <- set_names(Pallete_colors, union(Species_names1, Species_names2))
 
-# BiodiversiTREE and BARC datasets
+
+### Summary of soil data
+# Weighted mean of 0-5 cm soil for BiodiversiTREE dataset
+BDTR_0_5_weighted <- all_soil_clean %>% 
+  filter(Dataset %in% c("BDTR1", "BDTR2")) %>%
+  filter(Depth %in% c("0-2", "2-5")) %>%
+  pivot_wider(names_from = Depth, values_from = c(d13C_soil, d15N_soil)) %>%
+  unnest(starts_with("d")) %>%
+  mutate(`d13C_soil_0-5_weighted` = `d13C_soil_0-2`*0.4 + `d13C_soil_2-5`*0.6,
+         `d15N_soil_0-5_weighted` = `d15N_soil_0-2`*0.4 + `d15N_soil_2-5`*0.6) %>%
+  select(Dataset, Plot, `d13C_soil_0-5_weighted`, `d15N_soil_0-5_weighted`) %>%
+  transmute(Dataset, 
+            Plot,
+            Depth = "0-5", 
+            d13C_soil = `d13C_soil_0-5_weighted`, 
+            d15N_soil = `d15N_soil_0-5_weighted`)
+
+
+### Summary of all soil data at 0-5 and 5-10 cm depth by site
+soil_summary_data <- BDTR_0_5_weighted %>% 
+  bind_rows(., all_soil_clean) %>% 
+  filter(Depth %in% c("0-5", "5-10")) %>%
+  group_by(Dataset, Depth) %>%
+  summarise_at(.vars = vars(starts_with("d")), 
+               .funs = list(mean = mean, 
+                            se = function(x){sd(x)/sqrt(length(x))}))
+  
+
+### BiodiversiTREE and BARC
 SEAb_points_df_1 <- SEAb_df %>% 
   filter(Dataset %in% c("BDTR1", "BDTR2", "BARC")) %>%
   select(Dataset, Species, SEAb_points) %>%
@@ -148,11 +180,32 @@ adjusted_data %>%
         legend.text = element_text(size = 10, margin = margin(t = 0)),
         legend.spacing.y = unit(0, "cm"),
         legend.key.height = unit(0.8, "cm"),
-        plot.margin = margin(0.2, 0.05, 0.01, 0.05, "null")) 
-
+        plot.margin = margin(0.2, 0.05, 0.01, 0.05, "null")) + 
+  geom_point(data = filter(soil_summary_data, Dataset %in% c("BDTR1", "BDTR2", "BARC")),
+             aes(x = d13C_soil_mean, y = d15N_soil_mean, shape = Depth), 
+             size = 2) + 
+  geom_errorbarh(data = filter(soil_summary_data, Dataset %in% c("BDTR1", "BDTR2", "BARC")),
+                 aes(y = d15N_soil_mean,
+                     xmin = d13C_soil_mean - d13C_soil_se, 
+                     xmax = d13C_soil_mean + d13C_soil_se),
+                 inherit.aes = F, 
+                 height = 0
+                 ) + 
+  geom_errorbar(data = filter(soil_summary_data, Dataset %in% c("BDTR1", "BDTR2", "BARC")),
+                aes(x = d13C_soil_mean,
+                    ymin = d15N_soil_mean - d15N_soil_se, 
+                    ymax = d15N_soil_mean + d15N_soil_se),
+                inherit.aes = F, 
+                width = 0) + 
+  guides(shape = guide_legend(title = "Soil depth (cm)",
+                              keywidth = 1,
+                              direction = "horizontal",
+                              override.aes = list(size = 1.5)))
+  
 ggsave("Output/Figures/SEAb_biplot1.tiff", device = tiff, width = 7, height = 7, dpi = 600)
 
-# SERC dataset
+
+### SERC
 SEAb_points_df_2 <- SEAb_df %>% 
   filter(Dataset %in% c("SERC1", "SERC2")) %>%
   select(Dataset, Species, SEAb_points) %>%
@@ -190,15 +243,36 @@ adjusted_data %>%
   mytheme + 
   theme(legend.direction = "horizontal",
         legend.position = c(0.5, 1.2),
+        legend.box.margin = margin(t = -10, b = 10),
         legend.text = element_text(size = 10, margin = margin(r = 3)),
-        legend.spacing.y = unit(0, "cm"),
-        plot.margin = margin(0.2, 0.05, 0.01, 0.05, "null")) 
+        legend.margin = margin(t = 2, b = 2),
+        legend.spacing.y = unit(0.05, "cm"),
+        plot.margin = margin(0.3, 0.05, 0.01, 0.05, "null")) +
+  geom_point(data = filter(soil_summary_data, Dataset %in% c("SERC1", "SERC2")),
+             aes(x = d13C_soil_mean, y = d15N_soil_mean, shape = Depth), 
+             size = 2) + 
+  geom_errorbarh(data = filter(soil_summary_data, Dataset %in% c("SERC1", "SERC2")),
+                 aes(y = d15N_soil_mean,
+                     xmin = d13C_soil_mean - d13C_soil_se, 
+                     xmax = d13C_soil_mean + d13C_soil_se),
+                 inherit.aes = F, 
+                 height = 0) + 
+  geom_errorbar(data = filter(soil_summary_data, Dataset %in% c("SERC1", "SERC2")),
+                aes(x = d13C_soil_mean,
+                    ymin = d15N_soil_mean - d15N_soil_se, 
+                    ymax = d15N_soil_mean + d15N_soil_se),
+                inherit.aes = F,
+                width = 0) + 
+  guides(shape = guide_legend(title = "Soil depth (cm)",
+                              keywidth = 1,
+                              direction = "horizontal",
+                              override.aes = list(size = 1.5)))
 
-ggsave("Output/Figures/SEAb_biplot2.tiff", device = tiff, width = 7, height = 4, dpi = 600)
+ggsave("Output/Figures/SEAb_biplot2.tiff", device = tiff, width = 7, height = 4.3, dpi = 600)
 
 
-### 2. Dot charts of SEAbs
-# BiodiversiTREE and BARC datasets
+# Section 2 ---------------------------------------------------------------
+### BiodiversiTREE and BARC
 label_df1 <- data.frame(Dataset = c("BDTR1", "BDTR2", "BARC"),
                         x = c(5.9, 5.9, 5.9), 
                         y = c(-0.5, -0.5, -0.5),
@@ -248,7 +322,8 @@ SEAb_df %>%
   
 ggsave("Output/Figures/SEAb_dotchart1.tiff", width = 10, height = 3.7, dpi = 600)
 
-# SERC dataset
+
+### SERC
 label_df2 <- data.frame(Dataset = c("SERC1", "SERC2"),
                         x = c(5.9, 5.9), 
                         y = c(-0.1, -0.1),
@@ -304,15 +379,16 @@ SEAb_df %>%
 ggsave("Output/Figures/SEAb_dotchart2.tiff", width = 7.1, height = 3.5, dpi = 600)
 
 
-### 3. Heatmaps of pairwise percentage SEAb overlaps
-# Customized palette for the heatmaps
+# Section 3 ---------------------------------------------------------------
+### Customized palette for the heatmaps
 heatmap_pal <- c(rgb(246, 255, 0, 0.3*255, maxColorValue = 255), 
                  rgb(246, 255, 0, 0.9*255, maxColorValue = 255),
                  rgb(250, 200, 0, 1*255, maxColorValue = 255), 
                  rgb(255, 0, 0, 1*255, maxColorValue = 255),
                  rgb(255, 0, 0, 1*255, maxColorValue = 255))
 
-# Extract a common legend for plotting
+
+### Extract a common legend for plotting
 P_legend <-
   SEAb_df %>% filter(Dataset == "BDTR1") %>%
   select(1:3, SEAb_overlap) %>%
@@ -337,7 +413,8 @@ P_legend <-
 
 legend <- get_legend(P_legend) %>% as_ggplot()
 
-# Plot for BDTR1
+
+### Plot for BDTR1
 P1 <-
   SEAb_df %>% filter(Dataset == "BDTR1") %>%
   select(1:3, SEAb_overlap) %>%
@@ -385,7 +462,8 @@ P1 <-
         plot.subtitle = element_text(size = 15),
         plot.title = element_text(size = 18, hjust = 0.5, vjust = -4.5))
 
-# Plot for BDTR2
+
+### Plot for BDTR2
 P2 <-
   SEAb_df %>% filter(Dataset == "BDTR2") %>%
   select(1:3, SEAb_overlap) %>%
@@ -433,7 +511,8 @@ P2 <-
         plot.subtitle = element_text(size = 15),
         plot.title = element_text(size = 18, hjust = 0.5, vjust = -4.5))
 
-# Plot for BARC
+
+### Plot for BARC
 P3 <-
   SEAb_df %>% filter(Dataset == "BARC") %>%
   select(1:3, SEAb_overlap) %>%
@@ -481,7 +560,8 @@ P3 <-
         plot.subtitle = element_text(size = 15),
         plot.title = element_text(size = 18, hjust = 0.5, vjust = -4.5))
 
-# Layout the plots with grey-filled diagonals
+
+### Layout the plots with grey-filled diagonals
 ggdraw() + 
   draw_plot(P1 + geom_tile(data = data.frame(x = 1:5, y = 1:5),
                            aes(x = x, y = y), 
@@ -499,7 +579,8 @@ ggdraw() +
 
 ggsave("Output/Figures/Overlap_grey.tiff", device = tiff, width = 13, height = 6, dpi = 600)
 
-# Summary tables for the percentage SEAb overlaps
+
+### Summary tables for the percentage SEAb overlaps
 walk(c("BDTR1", "BDTR2"), function(x){
   SEAb_overlap <- SEAb_df %>% 
     filter(Dataset == x) %>%
@@ -529,8 +610,134 @@ walk(c("BARC"), function(x){
 })
 
 
+# Section 4 ---------------------------------------------------------------
+### d13C
+ggplot(all_soil_clean, aes(x = Depth, y = d13C_soil)) +
+  geom_point(position = position_jitter(width = 0.1), alpha = 0.5, color = "grey") + 
+  labs(x = "Soil depth (cm)", 
+       y = expression(paste(delta^{13}, "C (\u2030) (mean ± SE)", sep = ""))) +
+  facet_wrap(~Dataset, scales = "free") + 
+  stat_summary(fun.data = mean_se, geom = "pointrange", size = 1) + 
+  mytheme + 
+  scale_y_continuous(expand = c(0, 0.4))
+
+ggsave("Output/Figures/Soil_d13C.tiff", device = tiff, width = 9, height = 6, dpi = 600)
 
 
+### d15N
+ggplot(all_soil_clean, aes(x = Depth, y = d15N_soil)) +
+  geom_point(position = position_jitter(width = 0.1), alpha = 0.5, color = "grey") + 
+  labs(x = "Soil depth (cm)", 
+       y = expression(paste(delta^{15}, "N (\u2030) (mean ± SE)", sep = ""))) +
+  facet_wrap(~Dataset, scales = "free") + 
+  stat_summary(fun.data = mean_se, geom = "pointrange", size = 1) + 
+  mytheme + 
+  scale_y_continuous(expand = c(0, 0.3))
 
+ggsave("Output/Figures/Soil_d15N.tiff", device = tiff, width = 9, height = 6, dpi = 600)
+
+
+# Section 5 ---------------------------------------------------------------
+### Summary of earthworm Delta values
+Deltas_with_BDTR2 <- adjusted_data %>% 
+  mutate(Delta_13C = d13C_worm_adjusted - d13C_soil_grand_mean,
+         Delta_15N = d15N_worm_adjusted - d15N_soil_grand_mean) %>%
+  select(Dataset, Plot, Species, Delta_13C, Delta_15N) %>%
+  group_by(Species) %>%
+  summarise_at(.vars = vars(starts_with("Delta")), 
+               .funs = list(mean = mean, 
+                            se = function(x){sd(x)/sqrt(length(x))}))
+
+Deltas_without_BDTR2 <- adjusted_data %>% 
+  filter(Dataset != "BDTR2") %>%
+  mutate(Delta_13C = d13C_worm_adjusted - d13C_soil_grand_mean,
+         Delta_15N = d15N_worm_adjusted - d15N_soil_grand_mean) %>%
+  select(Dataset, Plot, Species, Delta_13C, Delta_15N) %>%
+  group_by(Species) %>%
+  summarise_at(.vars = vars(starts_with("Delta")), 
+               .funs = list(mean = mean, 
+                            se = function(x){sd(x)/sqrt(length(x))}))
+
+Deltas <- bind_rows(list(`With BDTR2` = Deltas_with_BDTR2, 
+                         `Without BDTR2`= Deltas_without_BDTR2), 
+                    .id = "w/o_BDTR2")
+
+
+### Color palette for the species
+Species_names1 <- adjusted_data %>% 
+  filter(Dataset %in% c("BDTR1", "BDTR2", "BARC")) %>%
+  .$Species %>%
+  unique() %>% 
+  sort()
+
+Species_names2 <- adjusted_data %>% 
+  filter(Dataset %in% c("SERC1", "SERC2")) %>%
+  .$Species %>%
+  unique() %>% 
+  sort()
+
+Pallete_colors <- c("#FFD966", 
+                    "#843C0C", 
+                    "#BF9001", 
+                    "#3C5488FF", 
+                    "#8FAADC", 
+                    "#70AD47", 
+                    "#C55A11", 
+                    "#984EA3", 
+                    "#385723", 
+                    "#F4B183")
+
+pal <- set_names(Pallete_colors, union(Species_names1, Species_names2))
+
+
+### Plot
+# Panel tags
+label_df3 <- tibble(`w/o_BDTR2` = c("With BDTR2", "Without BDTR2"),
+                    x = c(-8.2, -8.2), 
+                    y = c(5.1, 5.1),
+                    Label = c("(a)", "(b)")) %>%
+  mutate(`w/o_BDTR2` = factor(`w/o_BDTR2`, levels = unique(`w/o_BDTR2`), ordered = T))
+
+# Plot
+ggplot(data = Deltas, aes(color = Species)) + 
+  geom_point(aes(x = Delta_13C_mean, 
+                 y = Delta_15N_mean), 
+             size = 1) + 
+  geom_errorbarh(aes(y = Delta_15N_mean,
+                     xmin = Delta_13C_mean - Delta_13C_se, 
+                     xmax = Delta_13C_mean + Delta_13C_se),
+                 height = 0.1
+  ) + 
+  geom_errorbar(aes(x = Delta_13C_mean,
+                    ymin = Delta_15N_mean - Delta_15N_se, 
+                    ymax = Delta_15N_mean + Delta_15N_se),
+                width = 0.1) +
+  facet_wrap(~`w/o_BDTR2`) + 
+  geom_text(data = label_df3, aes(x = x, y = y, label = Label), size = 5, inherit.aes = F) +
+  labs(x = expression(paste(Delta^{13}, "C (\u2030)", sep = "")), 
+       y = expression(paste(Delta^{15}, "N (\u2030)", sep = ""))) +
+  scale_color_manual(name = NULL, 
+                     values = pal,
+                     label = c(expression(italic("Allolobophora chlorotica")),
+                               expression(italic("Aporrectodea caliginosa")),
+                               expression(italic("Aporrectodea trapezoides")),
+                               expression(italic("Diplocardia caroliniana")),
+                               expression(italic("Eisenoides lonnbergi")),
+                               expression(italic("Lumbricus friendi")),
+                               expression(italic("Lumbricus rubellus")),
+                               expression(italic("Lumbricus terrestris")),
+                               expression(italic("Metaphire hilgendorfi")),
+                               expression(italic("Octolasion cyaneum")))) + 
+  coord_cartesian(xlim = c(-8, 6), ylim = c(-2, 4.5), clip = "off") +
+  mytheme + 
+  guides(color = guide_legend(nrow = 2, byrow = T, override.aes = list(shape = 19))) + 
+  theme(legend.direction = "horizontal",
+        legend.position = c(0.5, 1.2),
+        legend.text = element_text(size = 7, margin = margin(r = 2)),
+        legend.spacing.y = unit(0.03, "cm"),
+        legend.key.width = unit(0.8, "cm"),
+        plot.margin = margin(0.2, 0.05, 0.01, 0.05, "null"))
+  
+ggsave("Output/Figures/species_Deltas.tiff", device = tiff, width = 8, height = 5, dpi = 600)
 
 

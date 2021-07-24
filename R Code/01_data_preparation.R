@@ -9,7 +9,7 @@
 ## Section 1. Clean the earthworm and soil stable isotope datasets and organize them into 
 ##            a single tidy dataframe.
 ## Section 2. Clean all the soil data and organize them into a single tidy dataframe.
-##
+## 
 ## Notes:
 ##
 ## -----------------------------------------------------------------------------
@@ -259,9 +259,9 @@ all_soil_clean <- bind_rows(BDTR1_soil_clean,
                             BARC_soil_clean_,
                             SERC1_soil_clean,
                             SERC2_soil_clean) %>%
-  relocate(Dataset)
+  relocate(Dataset) %>%
+  mutate(Dataset = factor(Dataset, levels = unique(Dataset), ordered = T))
           
 write_rds(all_soil_clean, "./Output/Data_clean/all_soil_clean.rds")
-
 
 
