@@ -3,7 +3,7 @@
 ##
 ## Author: Gen-Chang Hsu
 ##
-## Date: 2021-07-13
+## Date: 2022-02-07
 ##
 ## Description: 
 ## Section 1. Stable isotope scatterplots: SEAb ellipses of earthworm species + 
@@ -26,6 +26,7 @@ library(magrittr)
 library(ggsci)
 library(ggpubr)
 library(cowplot)
+library(ggh4x)
 
 
 # Import files -----------------------------------------------------------------
@@ -66,7 +67,7 @@ mytheme <- theme(
 
 ############################### Code starts here ###############################
 
-# Section 1 ---------------------------------------------------------------
+# Section 1 --------------------------------------------------------------------
 ### Background-adjusted earthworm stable isotope values
 adjusted_data <- all_data_clean %>%
   group_by(Dataset) %>%
@@ -162,6 +163,7 @@ adjusted_data %>%
   geom_path(data = SEAb_points_df_1, aes(x = x, y = y, color = Species), size = 0.5) +
   facet_wrap(~Dataset, scales = "free", nrow = 2) +
   geom_text(data = label_df1, aes(x = x, y = y, label = Label), size = 5) +
+  scale_shape_discrete(name = "Soil sample ", labels = c("0-2 cm ", "5-10 cm")) +
   scale_color_manual(name = NULL, 
                      values = pal,
                      limits = Species_names1,
@@ -197,10 +199,11 @@ adjusted_data %>%
                     ymax = d15N_soil_mean + d15N_soil_se),
                 inherit.aes = F, 
                 width = 0) + 
-  guides(shape = guide_legend(title = "Soil depth (cm)",
-                              keywidth = 1,
+  guides(shape = guide_legend(keywidth = 1,
                               direction = "horizontal",
-                              override.aes = list(size = 1.5)))
+                              override.aes = list(size = 1.5),
+                              order = 2),
+         color = guide_legend(order = 1))
   
 ggsave("Output/Figures/SEAb_biplot1.tiff", device = tiff, width = 7, height = 7, dpi = 600)
 
@@ -227,6 +230,7 @@ adjusted_data %>%
   geom_path(data = SEAb_points_df_2, aes(x = x, y = y, color = Species), size = 0.5) +
   facet_wrap(~Dataset, scales = "free_y") +
   geom_text(data = label_df2, aes(x = x, y = y, label = Label), size = 5) +
+  scale_shape_discrete(name = "Soil sample ", labels = c("0-2 cm ", "5-10 cm")) +
   scale_color_manual(name = NULL, 
                      values = pal,
                      limits = Species_names2,
@@ -263,15 +267,16 @@ adjusted_data %>%
                     ymax = d15N_soil_mean + d15N_soil_se),
                 inherit.aes = F,
                 width = 0) + 
-  guides(shape = guide_legend(title = "Soil depth (cm)",
-                              keywidth = 1,
+  guides(shape = guide_legend(keywidth = 1,
                               direction = "horizontal",
-                              override.aes = list(size = 1.5)))
+                              override.aes = list(size = 1.5),
+                              order = 2),
+         color = guide_legend(order = 1))
 
 ggsave("Output/Figures/SEAb_biplot2.tiff", device = tiff, width = 7, height = 4.3, dpi = 600)
 
 
-# Section 2 ---------------------------------------------------------------
+# Section 2 --------------------------------------------------------------------
 ### BiodiversiTREE and BARC
 label_df1 <- data.frame(Dataset = c("BDTR1", "BDTR2", "BARC"),
                         x = c(5.9, 5.9, 5.9), 
@@ -379,7 +384,7 @@ SEAb_df %>%
 ggsave("Output/Figures/SEAb_dotchart2.tiff", width = 7.1, height = 3.5, dpi = 600)
 
 
-# Section 3 ---------------------------------------------------------------
+# Section 3 --------------------------------------------------------------------
 ### Customized palette for the heatmaps
 heatmap_pal <- c(rgb(246, 255, 0, 0.3*255, maxColorValue = 255), 
                  rgb(246, 255, 0, 0.9*255, maxColorValue = 255),
@@ -610,31 +615,63 @@ walk(c("BARC"), function(x){
 })
 
 
-# Section 4 ---------------------------------------------------------------
+# Section 4 --------------------------------------------------------------------
 ### d13C
 ggplot(all_soil_clean, aes(x = Depth, y = d13C_soil)) +
-  geom_point(position = position_jitter(width = 0.1), alpha = 0.5, color = "grey") + 
+  geom_point(position = position_jitter(width = 0.1), alpha = 0.5, color = "grey") +
   labs(x = "Soil depth (cm)", 
-       y = expression(paste(delta^{13}, "C (\u2030) (mean ± SE)", sep = ""))) +
+       y = expression(paste(delta^{13}, "C (\u2030) (mean ± SE)", sep = "")),
+       subtitle = "(a)") +
   facet_wrap(~Dataset, scales = "free") + 
-  stat_summary(fun.data = mean_se, geom = "pointrange", size = 1) + 
+  stat_summary(fun.data = mean_se, geom = "pointrange", size = 0.75) + 
   mytheme + 
-  scale_y_continuous(expand = c(0, 0.4))
+  theme(plot.subtitle = element_text(size = 15, hjust = -0.05, vjust = -2.5)) +
+  scale_y_continuous(expand = c(0, 0.4)) + 
+  coord_flip() +
+  facetted_pos_scales(
+    y = list(Dataset == "BDTR1" ~ scale_y_continuous(limits = c(-21, -17), 
+                                                     breaks = c(-21, -20, -19, -18, -17)),
+             Dataset == "BDTR2" ~ scale_y_continuous(limits = c(-25, -22),
+                                                     breaks = c(-25, -24, -23, -22)),
+             Dataset == "BARC" ~ scale_y_continuous(limits = c(-25, -23), 
+                                                    breaks = c(-25, -24, -23)),
+             Dataset == "SERC1" ~ scale_y_continuous(limits = c(-29, -26), 
+                                                     breaks = c(-29, -28, -27, -26)),
+             Dataset == "SERC2" ~ scale_y_continuous(limits = c(-28, -25), 
+                                                     breaks = c(-28, -27, -26, -25))
+             )
+  )
 
-ggsave("Output/Figures/Soil_d13C.tiff", device = tiff, width = 9, height = 6, dpi = 600)
+ggsave("Output/Figures/Soil_d13C.tiff", device = tiff, width = 8, height = 6, dpi = 600)
 
 
 ### d15N
 ggplot(all_soil_clean, aes(x = Depth, y = d15N_soil)) +
   geom_point(position = position_jitter(width = 0.1), alpha = 0.5, color = "grey") + 
   labs(x = "Soil depth (cm)", 
-       y = expression(paste(delta^{15}, "N (\u2030) (mean ± SE)", sep = ""))) +
+       y = expression(paste(delta^{15}, "N (\u2030) (mean ± SE)", sep = "")),
+       subtitle = "(b)") +
   facet_wrap(~Dataset, scales = "free") + 
-  stat_summary(fun.data = mean_se, geom = "pointrange", size = 1) + 
+  stat_summary(fun.data = mean_se, geom = "pointrange", size = 0.75) + 
   mytheme + 
-  scale_y_continuous(expand = c(0, 0.3))
+  theme(plot.subtitle = element_text(size = 15, hjust = -0.05, vjust = -2.5)) +
+  scale_y_continuous(expand = c(0, 0.3)) + 
+  coord_flip() +
+  facetted_pos_scales(
+    y = list(Dataset == "BDTR1" ~ scale_y_continuous(limits = c(1, 7), 
+                                                     breaks = c(1, 2, 3, 4, 5, 6, 7)),
+             Dataset == "BDTR2" ~ scale_y_continuous(limits = c(1, 4),
+                                                     breaks = c(1, 2, 3, 4)),
+             Dataset == "BARC" ~ scale_y_continuous(limits = c(6, 8), 
+                                                    breaks = c(6, 7, 8)),
+             Dataset == "SERC1" ~ scale_y_continuous(limits = c(-1, 4), 
+                                                     breaks = c(-1, 0, 1, 2, 3, 4)),
+             Dataset == "SERC2" ~ scale_y_continuous(limits = c(-1, 4), 
+                                                     breaks = c(-1, 0, 1, 2, 3, 4))
+    )
+  )
 
-ggsave("Output/Figures/Soil_d15N.tiff", device = tiff, width = 9, height = 6, dpi = 600)
+ggsave("Output/Figures/Soil_d15N.tiff", device = tiff, width = 8, height = 6, dpi = 600)
 
 
 # Section 5 ---------------------------------------------------------------
@@ -699,21 +736,19 @@ label_df3 <- tibble(`w/o_BDTR2` = c("With BDTR2", "Without BDTR2"),
   mutate(`w/o_BDTR2` = factor(`w/o_BDTR2`, levels = unique(`w/o_BDTR2`), ordered = T))
 
 # Plot
-ggplot(data = Deltas, aes(color = Species)) + 
+ggplot(data = Deltas_with_BDTR2, aes(color = Species)) + 
   geom_point(aes(x = Delta_13C_mean, 
                  y = Delta_15N_mean), 
-             size = 1) + 
+             size = 2) + 
   geom_errorbarh(aes(y = Delta_15N_mean,
                      xmin = Delta_13C_mean - Delta_13C_se, 
                      xmax = Delta_13C_mean + Delta_13C_se),
-                 height = 0.1
+                 height = 0.1, size = 0.8
   ) + 
   geom_errorbar(aes(x = Delta_13C_mean,
                     ymin = Delta_15N_mean - Delta_15N_se, 
                     ymax = Delta_15N_mean + Delta_15N_se),
-                width = 0.1) +
-  facet_wrap(~`w/o_BDTR2`) + 
-  geom_text(data = label_df3, aes(x = x, y = y, label = Label), size = 5, inherit.aes = F) +
+                width = 0.18, size = 0.8) +
   labs(x = expression(paste(Delta^{13}, "C (\u2030)", sep = "")), 
        y = expression(paste(Delta^{15}, "N (\u2030)", sep = ""))) +
   scale_color_manual(name = NULL, 
@@ -722,22 +757,21 @@ ggplot(data = Deltas, aes(color = Species)) +
                                expression(italic("Aporrectodea caliginosa")),
                                expression(italic("Aporrectodea trapezoides")),
                                expression(italic("Diplocardia caroliniana")),
-                               expression(italic("Eisenoides lonnbergi")),
                                expression(italic("Lumbricus friendi")),
                                expression(italic("Lumbricus rubellus")),
+                               expression(italic("Eisenoides lonnbergi")),
                                expression(italic("Lumbricus terrestris")),
                                expression(italic("Metaphire hilgendorfi")),
                                expression(italic("Octolasion cyaneum")))) + 
   coord_cartesian(xlim = c(-8, 6), ylim = c(-2, 4.5), clip = "off") +
   mytheme + 
-  guides(color = guide_legend(nrow = 2, byrow = T, override.aes = list(shape = 19))) + 
-  theme(legend.direction = "horizontal",
-        legend.position = c(0.5, 1.2),
-        legend.text = element_text(size = 7, margin = margin(r = 2)),
-        legend.spacing.y = unit(0.03, "cm"),
+  guides(color = guide_legend()) + 
+  theme(legend.text = element_text(size = 10, margin = margin(r = 2)),
+        legend.spacing.y = unit(0.2, "cm"),
         legend.key.width = unit(0.8, "cm"),
+        legend.key.height = unit(0.8, "cm"),
         plot.margin = margin(0.2, 0.05, 0.01, 0.05, "null"))
   
-ggsave("Output/Figures/species_Deltas.tiff", device = tiff, width = 8, height = 5, dpi = 600)
+ggsave("Output/Figures/species_Deltas.tiff", device = tiff, width = 7, height = 5, dpi = 600)
 
 
