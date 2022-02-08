@@ -163,7 +163,7 @@ adjusted_data %>%
   geom_path(data = SEAb_points_df_1, aes(x = x, y = y, color = Species), size = 0.5) +
   facet_wrap(~Dataset, scales = "free", nrow = 2) +
   geom_text(data = label_df1, aes(x = x, y = y, label = Label), size = 5) +
-  scale_shape_discrete(name = "Soil sample ", labels = c("0-2 cm ", "5-10 cm")) +
+  scale_shape_discrete(name = "Soil ", labels = c("0-2 cm ", "5-10 cm")) +
   scale_color_manual(name = NULL, 
                      values = pal,
                      limits = Species_names1,
@@ -230,7 +230,7 @@ adjusted_data %>%
   geom_path(data = SEAb_points_df_2, aes(x = x, y = y, color = Species), size = 0.5) +
   facet_wrap(~Dataset, scales = "free_y") +
   geom_text(data = label_df2, aes(x = x, y = y, label = Label), size = 5) +
-  scale_shape_discrete(name = "Soil sample ", labels = c("0-2 cm ", "5-10 cm")) +
+  scale_shape_discrete(name = "Soil ", labels = c("0-2 cm ", "5-10 cm")) +
   scale_color_manual(name = NULL, 
                      values = pal,
                      limits = Species_names2,
@@ -617,7 +617,7 @@ walk(c("BARC"), function(x){
 
 # Section 4 --------------------------------------------------------------------
 ### d13C
-ggplot(all_soil_clean, aes(x = Depth, y = d13C_soil)) +
+ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d13C_soil)) +
   geom_point(position = position_jitter(width = 0.1), alpha = 0.5, color = "grey") +
   labs(x = "Soil depth (cm)", 
        y = expression(paste(delta^{13}, "C (\u2030) (mean ± SE)", sep = "")),
@@ -626,7 +626,7 @@ ggplot(all_soil_clean, aes(x = Depth, y = d13C_soil)) +
   stat_summary(fun.data = mean_se, geom = "pointrange", size = 0.75) + 
   mytheme + 
   theme(plot.subtitle = element_text(size = 15, hjust = -0.05, vjust = -2.5)) +
-  scale_y_continuous(expand = c(0, 0.4)) + 
+  scale_y_continuous(expand = c(0, 0.4)) +
   coord_flip() +
   facetted_pos_scales(
     y = list(Dataset == "BDTR1" ~ scale_y_continuous(limits = c(-21, -17), 
@@ -646,7 +646,7 @@ ggsave("Output/Figures/Soil_d13C.tiff", device = tiff, width = 8, height = 6, dp
 
 
 ### d15N
-ggplot(all_soil_clean, aes(x = Depth, y = d15N_soil)) +
+ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d15N_soil)) +
   geom_point(position = position_jitter(width = 0.1), alpha = 0.5, color = "grey") + 
   labs(x = "Soil depth (cm)", 
        y = expression(paste(delta^{15}, "N (\u2030) (mean ± SE)", sep = "")),
@@ -753,16 +753,26 @@ ggplot(data = Deltas_with_BDTR2, aes(color = Species)) +
        y = expression(paste(Delta^{15}, "N (\u2030)", sep = ""))) +
   scale_color_manual(name = NULL, 
                      values = pal,
-                     label = c(expression(italic("Allolobophora chlorotica")),
+                     limits = c("Octolasion cyaneum",
+                                "Eisenoides lonnbergi",
+                                "Diplocardia sp.",
+                                "Allolobophora chlorotica",
+                                "Aporrectodea caliginosa",
+                                "Aporrectodea trapezoides",
+                                "Lumbricus friendi",
+                                "Lumbricus rubellus",
+                                "Metaphire hilgendorfi",
+                                "Lumbricus terrestris"),
+                     label = c(expression(italic("Octolasion cyaneum")),
+                               expression(italic("Eisenoides lonnbergi")),
+                               expression(italic("Diplocardia caroliniana")),
+                               expression(italic("Allolobophora chlorotica")),
                                expression(italic("Aporrectodea caliginosa")),
                                expression(italic("Aporrectodea trapezoides")),
-                               expression(italic("Diplocardia caroliniana")),
                                expression(italic("Lumbricus friendi")),
                                expression(italic("Lumbricus rubellus")),
-                               expression(italic("Eisenoides lonnbergi")),
-                               expression(italic("Lumbricus terrestris")),
                                expression(italic("Metaphire hilgendorfi")),
-                               expression(italic("Octolasion cyaneum")))) + 
+                               expression(italic("Lumbricus terrestris")))) +
   coord_cartesian(xlim = c(-8, 6), ylim = c(-2, 4.5), clip = "off") +
   mytheme + 
   guides(color = guide_legend()) + 
