@@ -161,7 +161,10 @@ adjusted_data %>%
   labs(x = expression(paste(delta^{13}, "C (\u2030)", sep = "")), 
        y = expression(paste(delta^{15}, "N (\u2030)", sep = ""))) +
   geom_path(data = SEAb_points_df_1, aes(x = x, y = y, color = Species), size = 0.5) +
-  facet_wrap(~Dataset, scales = "free", nrow = 2) +
+  facet_wrap(~Dataset, scales = "free", nrow = 2,
+             labeller = as_labeller(c("BDTR1" = "ABANDONED1", 
+                                      "BDTR2" = "ABANDONED2",
+                                      "BARC" = "ARABLE1"))) +
   geom_text(data = label_df1, aes(x = x, y = y, label = Label), size = 5) +
   scale_shape_discrete(name = "Soil ", labels = c("0-2 cm ", "5-10 cm")) +
   scale_color_manual(name = NULL, 
@@ -206,6 +209,7 @@ adjusted_data %>%
          color = guide_legend(order = 1))
   
 ggsave("Output/Figures/SEAb_biplot1.tiff", device = tiff, width = 7, height = 7, dpi = 600)
+ggsave("Output/Figures/SEAb_biplot1.jpg", width = 7, height = 7, dpi = 600)
 
 
 ### SERC
@@ -228,7 +232,9 @@ adjusted_data %>%
   labs(x = expression(paste(delta^{13}, "C (\u2030)", sep = "")), 
        y = expression(paste(delta^{15}, "N (\u2030)", sep = ""))) +
   geom_path(data = SEAb_points_df_2, aes(x = x, y = y, color = Species), size = 0.5) +
-  facet_wrap(~Dataset, scales = "free_y") +
+  facet_wrap(~Dataset, scales = "free_y",
+             labeller = as_labeller(c("SERC1" = "FOREST1", 
+                                      "SERC2" = "FOREST2"))) +
   geom_text(data = label_df2, aes(x = x, y = y, label = Label), size = 5) +
   scale_shape_discrete(name = "Soil ", labels = c("0-2 cm ", "5-10 cm")) +
   scale_color_manual(name = NULL, 
@@ -274,6 +280,7 @@ adjusted_data %>%
          color = guide_legend(order = 1))
 
 ggsave("Output/Figures/SEAb_biplot2.tiff", device = tiff, width = 7, height = 4.3, dpi = 600)
+ggsave("Output/Figures/SEAb_biplot2.jpg", width = 7, height = 4.3, dpi = 600)
 
 
 # Section 2 --------------------------------------------------------------------
@@ -297,7 +304,10 @@ SEAb_df %>%
   ggplot(aes(x = fct_rev(Species), y = SEAb_mean)) + 
   geom_pointrange(aes(ymin = `SEAb_hdr_lower`, ymax = `SEAb_hdr_upper`, color = Species)) +
   coord_flip(xlim = c(1, 5), ylim = c(0, 35), clip = "off") + 
-  facet_wrap(~Dataset, scales = "free_x") +
+  facet_wrap(~Dataset, scales = "free_x",
+             labeller = as_labeller(c("BDTR1" = "ABANDONED1", 
+                                      "BDTR2" = "ABANDONED2",
+                                      "BARC" = "ARABLE1"))) +
   labs(x = NULL, y = expression(paste(SEA[b], " (", "\u2030"^2, ") ", "(Mean ± 95% HDI)"))) +
   geom_text(data = label_df1, aes(x = x, y = y, label = Label), size = 5) +
   scale_x_discrete(drop = F,
@@ -326,6 +336,7 @@ SEAb_df %>%
         panel.grid.minor.y = element_blank())
   
 ggsave("Output/Figures/SEAb_dotchart1.tiff", width = 10, height = 3.7, dpi = 600)
+ggsave("Output/Figures/SEAb_dotchart1.jpg", width = 10, height = 3.7, dpi = 600)
 
 
 ### SERC
@@ -348,7 +359,9 @@ SEAb_df %>%
   ggplot(aes(x = fct_rev(Species), y = SEAb_mean)) + 
   geom_pointrange(aes(ymin = `SEAb_hdr_lower`, ymax = `SEAb_hdr_upper`, color = Species)) +
   coord_flip(xlim = c(1, 5), ylim = c(0, 8), clip = "off") + 
-  facet_wrap(~Dataset, scales = "free_x") +
+  facet_wrap(~Dataset, scales = "free_x",
+             labeller = as_labeller(c("SERC1" = "FOREST1", 
+                                      "SERC2" = "FOREST2"))) +
   labs(x = NULL, y = expression(paste(SEA[b], " (", "\u2030"^2, ") ", "(Mean ± 95% HDI)"))) +
   geom_text(data = label_df2, aes(x = x, y = y, label = Label), size = 5) +
   scale_x_discrete(drop = F,
@@ -382,6 +395,7 @@ SEAb_df %>%
         panel.grid.minor.y = element_blank())
 
 ggsave("Output/Figures/SEAb_dotchart2.tiff", width = 7.1, height = 3.5, dpi = 600)
+ggsave("Output/Figures/SEAb_dotchart2.jpg", width = 7.1, height = 3.5, dpi = 600)
 
 
 # Section 3 --------------------------------------------------------------------
@@ -448,7 +462,7 @@ P1 <-
                        guide = "none") +
   labs(x = "Species A", 
        y = "Species B",
-       title = "BDTR1",
+       title = "ABANDONED1",
        subtitle = "(a)") +
   coord_fixed(ratio = 1) +
   mytheme + 
@@ -465,7 +479,7 @@ P1 <-
         legend.key.width = unit(0.7, "cm"),
         legend.text = element_text(size = 8),
         plot.subtitle = element_text(size = 15),
-        plot.title = element_text(size = 18, hjust = 0.5, vjust = -4.5))
+        plot.title = element_text(size = 15, hjust = 0.5, vjust = -4.5))
 
 
 ### Plot for BDTR2
@@ -497,7 +511,7 @@ P2 <-
                        guide = "none") +
   labs(x = "Species A", 
        y = "Species B",
-       title = "BDTR2",
+       title = "ABANDONED2",
        subtitle = "(b)") +
   coord_fixed(ratio = 1) +
   mytheme + 
@@ -514,7 +528,7 @@ P2 <-
         legend.key.width = unit(0.7, "cm"),
         legend.text = element_text(size = 8),
         plot.subtitle = element_text(size = 15),
-        plot.title = element_text(size = 18, hjust = 0.5, vjust = -4.5))
+        plot.title = element_text(size = 15, hjust = 0.5, vjust = -4.5))
 
 
 ### Plot for BARC
@@ -546,7 +560,7 @@ P3 <-
                        guide = "none") +
   labs(x = "Species A", 
        y = "Species B",
-       title = "BARC",
+       title = "ARABLE1",
        subtitle = "(c)") +
   coord_fixed(ratio = 1) +
   mytheme + 
@@ -563,7 +577,7 @@ P3 <-
         legend.key.width = unit(0.7, "cm"),
         legend.text = element_text(size = 8),
         plot.subtitle = element_text(size = 15),
-        plot.title = element_text(size = 18, hjust = 0.5, vjust = -4.5))
+        plot.title = element_text(size = 15, hjust = 0.65, vjust = -4.5))
 
 
 ### Layout the plots with grey-filled diagonals
@@ -583,7 +597,7 @@ ggdraw() +
   draw_plot(legend, x = 0.716, y = 0.1675, width = 0.35, height = 0.25)
 
 ggsave("Output/Figures/Overlap_grey.tiff", device = tiff, width = 13, height = 6, dpi = 600)
-
+ggsave("Output/Figures/Overlap_grey.jpg", device = "jpg", width = 13, height = 6, dpi = 600, bg = "white")
 
 ### Summary tables for the percentage SEAb overlaps
 walk(c("BDTR1", "BDTR2"), function(x){
@@ -622,7 +636,12 @@ ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d13C_soil)) +
   labs(x = "Soil depth (cm)", 
        y = expression(paste(delta^{13}, "C (\u2030) (mean ± SE)", sep = "")),
        subtitle = "(a)") +
-  facet_wrap(~Dataset, scales = "free") + 
+  facet_wrap(~Dataset, scales = "free",
+             labeller = as_labeller(c("BDTR1" = "ABANDONED1", 
+                                      "BDTR2" = "ABANDONED2",
+                                      "BARC" = "ARABLE1",
+                                      "SERC1" = "FOREST1",
+                                      "SERC2" = "FOREST2"))) + 
   stat_summary(fun.data = mean_se, geom = "pointrange", size = 0.75) + 
   mytheme + 
   theme(plot.subtitle = element_text(size = 15, hjust = -0.05, vjust = -2.5)) +
@@ -643,6 +662,7 @@ ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d13C_soil)) +
   )
 
 ggsave("Output/Figures/Soil_d13C.tiff", device = tiff, width = 8, height = 6, dpi = 600)
+ggsave("Output/Figures/Soil_d13C.jpg", width = 8, height = 6, dpi = 600)
 
 
 ### d15N
@@ -651,7 +671,12 @@ ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d15N_soil)) +
   labs(x = "Soil depth (cm)", 
        y = expression(paste(delta^{15}, "N (\u2030) (mean ± SE)", sep = "")),
        subtitle = "(b)") +
-  facet_wrap(~Dataset, scales = "free") + 
+  facet_wrap(~Dataset, scales = "free",
+             labeller = as_labeller(c("BDTR1" = "ABANDONED1", 
+                                      "BDTR2" = "ABANDONED2",
+                                      "BARC" = "ARABLE1",
+                                      "SERC1" = "FOREST1",
+                                      "SERC2" = "FOREST2"))) + 
   stat_summary(fun.data = mean_se, geom = "pointrange", size = 0.75) + 
   mytheme + 
   theme(plot.subtitle = element_text(size = 15, hjust = -0.05, vjust = -2.5)) +
@@ -672,6 +697,7 @@ ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d15N_soil)) +
   )
 
 ggsave("Output/Figures/Soil_d15N.tiff", device = tiff, width = 8, height = 6, dpi = 600)
+ggsave("Output/Figures/Soil_d15N.jpg", width = 8, height = 6, dpi = 600)
 
 
 # Section 5 ---------------------------------------------------------------
@@ -783,5 +809,6 @@ ggplot(data = Deltas_with_BDTR2, aes(color = Species)) +
         plot.margin = margin(0.2, 0.05, 0.01, 0.05, "null"))
   
 ggsave("Output/Figures/species_Deltas.tiff", device = tiff, width = 7, height = 5, dpi = 600)
+ggsave("Output/Figures/species_Deltas.jpg", width = 7, height = 5, dpi = 600)
 
 
