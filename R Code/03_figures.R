@@ -814,8 +814,11 @@ ggsave("Output/Figures/species_Deltas.jpg", width = 7, height = 5, dpi = 600)
 
 ### Sample sizes of the earthworm species across the sites
 adjusted_data %>% 
+  group_by(Dataset, Species) %>% 
+  summarise(n = n()) %>% 
+  write_csv("Output/Data_clean/species_sample_sizes_by_site.csv")
+
+adjusted_data %>% 
   group_by(Species) %>% 
   summarise(n = n()) %>% 
   write_csv("Output/Data_clean/species_sample_sizes.csv")
-
-

@@ -1,0 +1,25 @@
+Dataset,Species,n
+BDTR1,Allolobophora chlorotica,8
+BDTR1,Aporrectodea caliginosa,16
+BDTR1,Aporrectodea trapezoides,14
+BDTR1,Diplocardia sp.,1
+BDTR1,Lumbricus friendi,26
+BDTR1,Lumbricus rubellus,21
+BDTR2,Allolobophora chlorotica,8
+BDTR2,Aporrectodea caliginosa,5
+BDTR2,Aporrectodea trapezoides,10
+BDTR2,Diplocardia sp.,3
+BDTR2,Lumbricus friendi,8
+BDTR2,Lumbricus rubellus,8
+BARC,Aporrectodea caliginosa,9
+BARC,Aporrectodea trapezoides,12
+SERC1,Aporrectodea caliginosa,12
+SERC1,Eisenoides lonnbergi,15
+SERC1,Lumbricus rubellus,14
+SERC1,Lumbricus terrestris,1
+SERC1,Octolasion cyaneum,10
+SERC2,Aporrectodea caliginosa,2
+SERC2,Eisenoides lonnbergi,16
+SERC2,Lumbricus rubellus,11
+SERC2,Lumbricus terrestris,2
+SERC2,Metaphire hilgendorfi,19
