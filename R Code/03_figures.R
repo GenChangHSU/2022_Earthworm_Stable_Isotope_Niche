@@ -631,7 +631,7 @@ walk(c("BARC"), function(x){
 
 # Section 4 --------------------------------------------------------------------
 ### d13C
-ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d13C_soil)) +
+P_soil_d13C <- ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d13C_soil)) +
   geom_point(position = position_jitter(width = 0.1), alpha = 0.5, color = "grey") +
   labs(x = "Soil depth (cm)", 
        y = expression(paste(delta^{13}, "C (\u2030) (mean ± SE)", sep = "")),
@@ -644,7 +644,8 @@ ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d13C_soil)) +
                                       "SERC2" = "FOREST2"))) + 
   stat_summary(fun.data = mean_se, geom = "pointrange", size = 0.75) + 
   mytheme + 
-  theme(plot.subtitle = element_text(size = 15, hjust = -0.05, vjust = -2.5)) +
+  theme(plot.subtitle = element_text(size = 15, hjust = -0.05, vjust = -2.5),
+        plot.margin = margin(0.05, 0.05, 0, 0.05, "null")) +
   scale_y_continuous(expand = c(0, 0.4)) +
   coord_flip() +
   facetted_pos_scales(
@@ -661,12 +662,14 @@ ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d13C_soil)) +
              )
   )
 
-ggsave("Output/Figures/Soil_d13C.tiff", device = tiff, width = 8, height = 6, dpi = 600)
-ggsave("Output/Figures/Soil_d13C.jpg", width = 8, height = 6, dpi = 600)
+P_soil_d13C
+
+ggsave("Output/Figures/Soil_d13C.tiff", device = tiff, width = 8, height = 5, dpi = 600)
+ggsave("Output/Figures/Soil_d13C.jpg", width = 8, height = 5, dpi = 600)
 
 
 ### d15N
-ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d15N_soil)) +
+P_soil_d15N <- ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d15N_soil)) +
   geom_point(position = position_jitter(width = 0.1), alpha = 0.5, color = "grey") + 
   labs(x = "Soil depth (cm)", 
        y = expression(paste(delta^{15}, "N (\u2030) (mean ± SE)", sep = "")),
@@ -679,7 +682,8 @@ ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d15N_soil)) +
                                       "SERC2" = "FOREST2"))) + 
   stat_summary(fun.data = mean_se, geom = "pointrange", size = 0.75) + 
   mytheme + 
-  theme(plot.subtitle = element_text(size = 15, hjust = -0.05, vjust = -2.5)) +
+  theme(plot.subtitle = element_text(size = 15, hjust = -0.05, vjust = -2.5),
+        plot.margin = margin(0, 0.05, 0.05, 0.05, "null")) +
   scale_y_continuous(expand = c(0, 0.3)) + 
   coord_flip() +
   facetted_pos_scales(
@@ -696,8 +700,16 @@ ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d15N_soil)) +
     )
   )
 
-ggsave("Output/Figures/Soil_d15N.tiff", device = tiff, width = 8, height = 6, dpi = 600)
-ggsave("Output/Figures/Soil_d15N.jpg", width = 8, height = 6, dpi = 600)
+P_soil_d15N
+
+ggsave("Output/Figures/Soil_d15N.tiff", device = tiff, width = 8, height = 5, dpi = 600)
+ggsave("Output/Figures/Soil_d15N.jpg", width = 8, height = 5, dpi = 600)
+
+
+### Merge the two plots into one figure
+ggarrange(P_soil_d13C, P_soil_d15N, nrow = 2)
+ggsave("Output/Figures/Soil_SI.tiff", device = tiff, width = 8, height = 10, dpi = 600)
+ggsave("Output/Figures/Soil_SI.jpg", width = 8, height = 10, dpi = 600)
 
 
 # Section 5 ---------------------------------------------------------------
