@@ -1,19 +1,17 @@
 ## -----------------------------------------------------------------------------
-## Title: Pairwise Comparisons of Earthworm Species Total Isotopic Niches
+## Title: Pairwise Comparisons of Earthworms' Total Isotopic Niches
 ##
 ## Author: Gen-Chang Hsu
 ##
-## Date: 2021-07-13
+## Date: 2022-05-31
 ##
 ## Description: 
 ## Section 1. Test the pairwise differences in species total isotopic niches using 
 ##            PERMANOVA and PERMDISP.
 ## 
-## Notes:
 ##
 ## -----------------------------------------------------------------------------
 set.seed(123)
-
 
 # Libraries --------------------------------------------------------------------
 library(tidyverse)
@@ -28,8 +26,7 @@ all_data_clean <- readRDS("./Output/Data_clean/all_data_clean.rds")
 
 
 ############################### Code starts here ###############################
-
-# Section 1 ---------------------------------------------------------------
+# Section 1 --------------------------------------------------------------------
 ### Background-adjusted earthworm stable isotope values
 adjusted_data <- all_data_clean %>%
   group_by(Dataset) %>%
@@ -47,7 +44,6 @@ adjusted_data <- all_data_clean %>%
   
   # Reorder the levels in column "Dataset" for plotting purpose
   mutate(Dataset = factor(Dataset, levels = unique(Dataset), ordered = T))
-
 
 ### Summary statistics of species isotopic niches
 # A vector of the dataset names
@@ -108,7 +104,6 @@ Isoniche_test_list <- lapply(dataset_list, function(dataset){
   
 }) %>% 
   `names<-`(dataset_list)
-
 
 ### Convert the list into a dataframe
 Isoniche_test_df <- Isoniche_test_list %>% 

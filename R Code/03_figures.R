@@ -1,9 +1,9 @@
 ## -----------------------------------------------------------------------------
-## Title: Visualization of earthworm and soil stable isotope signatures
+## Title: Visualization of Earthworm and Soil Stable Isotope Signatures
 ##
 ## Author: Gen-Chang Hsu
 ##
-## Date: 2022-02-07
+## Date: 2022-05-31
 ##
 ## Description: 
 ## Section 1. Stable isotope scatterplots: SEAb ellipses of earthworm species + 
@@ -14,11 +14,9 @@
 ## Section 5. Dot charts (mean and SE) of the big deltas of earthworm species 
 ##            (pooled across all sites).
 ## 
-## Notes:
 ##
 ## -----------------------------------------------------------------------------
 set.seed(123)
-
 
 # Libraries --------------------------------------------------------------------
 library(tidyverse)
@@ -66,7 +64,6 @@ mytheme <- theme(
 
 
 ############################### Code starts here ###############################
-
 # Section 1 --------------------------------------------------------------------
 ### Background-adjusted earthworm stable isotope values
 adjusted_data <- all_data_clean %>%
@@ -85,7 +82,6 @@ adjusted_data <- all_data_clean %>%
   
   # Reorder the levels in column "Dataset" for plotting purpose
   mutate(Dataset = factor(Dataset, levels = unique(Dataset), ordered = T))
-
 
 ### Create a fixed color palette for all species across the sites
 Species_names1 <- adjusted_data %>% 
@@ -113,7 +109,6 @@ Pallete_colors <- c("#FFD966",
 
 pal <- set_names(Pallete_colors, union(Species_names1, Species_names2))
 
-
 ### Summary of soil data
 # Weighted mean of 0-5 cm soil for BiodiversiTREE dataset
 BDTR_0_5_weighted <- all_soil_clean %>% 
@@ -130,7 +125,6 @@ BDTR_0_5_weighted <- all_soil_clean %>%
             d13C_soil = `d13C_soil_0-5_weighted`, 
             d15N_soil = `d15N_soil_0-5_weighted`)
 
-
 ### Summary of all soil data at 0-5 and 5-10 cm depth by site
 soil_summary_data <- BDTR_0_5_weighted %>% 
   bind_rows(., all_soil_clean) %>% 
@@ -140,7 +134,6 @@ soil_summary_data <- BDTR_0_5_weighted %>%
                .funs = list(mean = mean, 
                             se = function(x){sd(x)/sqrt(length(x))}))
   
-
 ### BiodiversiTREE and BARC
 SEAb_points_df_1 <- SEAb_df %>% 
   filter(Dataset %in% c("BDTR1", "BDTR2", "BARC")) %>%
@@ -166,7 +159,7 @@ adjusted_data %>%
                                       "BDTR2" = "ABANDONED2",
                                       "BARC" = "ARABLE1"))) +
   geom_text(data = label_df1, aes(x = x, y = y, label = Label), size = 5) +
-  scale_shape_discrete(name = "Soil ", labels = c("0-2 cm ", "5-10 cm")) +
+  scale_shape_discrete(name = "Soil ", labels = c("0-5 cm ", "5-10 cm")) +
   scale_color_manual(name = NULL, 
                      values = pal,
                      limits = Species_names1,
@@ -211,7 +204,6 @@ adjusted_data %>%
 ggsave("Output/Figures/SEAb_biplot1.tiff", device = tiff, width = 7, height = 7, dpi = 600)
 ggsave("Output/Figures/SEAb_biplot1.jpg", width = 7, height = 7, dpi = 600)
 
-
 ### SERC
 SEAb_points_df_2 <- SEAb_df %>% 
   filter(Dataset %in% c("SERC1", "SERC2")) %>%
@@ -236,7 +228,7 @@ adjusted_data %>%
              labeller = as_labeller(c("SERC1" = "FOREST1", 
                                       "SERC2" = "FOREST2"))) +
   geom_text(data = label_df2, aes(x = x, y = y, label = Label), size = 5) +
-  scale_shape_discrete(name = "Soil ", labels = c("0-2 cm ", "5-10 cm")) +
+  scale_shape_discrete(name = "Soil ", labels = c("0-5 cm ", "5-10 cm")) +
   scale_color_manual(name = NULL, 
                      values = pal,
                      limits = Species_names2,
@@ -338,7 +330,6 @@ SEAb_df %>%
 ggsave("Output/Figures/SEAb_dotchart1.tiff", width = 10, height = 3.7, dpi = 600)
 ggsave("Output/Figures/SEAb_dotchart1.jpg", width = 10, height = 3.7, dpi = 600)
 
-
 ### SERC
 label_df2 <- data.frame(Dataset = c("SERC1", "SERC2"),
                         x = c(5.9, 5.9), 
@@ -432,7 +423,6 @@ P_legend <-
 
 legend <- get_legend(P_legend) %>% as_ggplot()
 
-
 ### Plot for BDTR1
 P1 <-
   SEAb_df %>% filter(Dataset == "BDTR1") %>%
@@ -480,7 +470,6 @@ P1 <-
         legend.text = element_text(size = 8),
         plot.subtitle = element_text(size = 15),
         plot.title = element_text(size = 15, hjust = 0.5, vjust = -4.5))
-
 
 ### Plot for BDTR2
 P2 <-
@@ -530,7 +519,6 @@ P2 <-
         plot.subtitle = element_text(size = 15),
         plot.title = element_text(size = 15, hjust = 0.5, vjust = -4.5))
 
-
 ### Plot for BARC
 P3 <-
   SEAb_df %>% filter(Dataset == "BARC") %>%
@@ -578,7 +566,6 @@ P3 <-
         legend.text = element_text(size = 8),
         plot.subtitle = element_text(size = 15),
         plot.title = element_text(size = 15, hjust = 0.65, vjust = -4.5))
-
 
 ### Layout the plots with grey-filled diagonals
 ggdraw() + 
@@ -667,7 +654,6 @@ P_soil_d13C
 ggsave("Output/Figures/Soil_d13C.tiff", device = tiff, width = 8, height = 5, dpi = 600)
 ggsave("Output/Figures/Soil_d13C.jpg", width = 8, height = 5, dpi = 600)
 
-
 ### d15N
 P_soil_d15N <- ggplot(all_soil_clean, aes(x = fct_rev(Depth), y = d15N_soil)) +
   geom_point(position = position_jitter(width = 0.1), alpha = 0.5, color = "grey") + 
@@ -705,14 +691,13 @@ P_soil_d15N
 ggsave("Output/Figures/Soil_d15N.tiff", device = tiff, width = 8, height = 5, dpi = 600)
 ggsave("Output/Figures/Soil_d15N.jpg", width = 8, height = 5, dpi = 600)
 
-
 ### Merge the two plots into one figure
 ggarrange(P_soil_d13C, P_soil_d15N, nrow = 2)
 ggsave("Output/Figures/Soil_SI.tiff", device = tiff, width = 8, height = 10, dpi = 600)
 ggsave("Output/Figures/Soil_SI.jpg", width = 8, height = 10, dpi = 600)
 
 
-# Section 5 ---------------------------------------------------------------
+# Section 5 --------------------------------------------------------------------
 ### Summary of earthworm Delta values
 Deltas_with_BDTR2 <- adjusted_data %>% 
   mutate(Delta_13C = d13C_worm_adjusted - d13C_soil_grand_mean,
@@ -736,7 +721,6 @@ Deltas_without_BDTR2 <- adjusted_data %>%
 Deltas <- bind_rows(list(`With BDTR2` = Deltas_with_BDTR2, 
                          `Without BDTR2`= Deltas_without_BDTR2), 
                     .id = "w/o_BDTR2")
-
 
 ### Color palette for the species
 Species_names1 <- adjusted_data %>% 
@@ -763,7 +747,6 @@ Pallete_colors <- c("#FFD966",
                     "#F4B183")
 
 pal <- set_names(Pallete_colors, union(Species_names1, Species_names2))
-
 
 ### Plot
 # Panel tags
@@ -823,7 +806,6 @@ ggplot(data = Deltas_with_BDTR2, aes(color = Species)) +
 ggsave("Output/Figures/species_Deltas.tiff", device = tiff, width = 7, height = 5, dpi = 600)
 ggsave("Output/Figures/species_Deltas.jpg", width = 7, height = 5, dpi = 600)
 
-
 ### Sample sizes of the earthworm species across the sites
 adjusted_data %>% 
   group_by(Dataset, Species) %>% 
@@ -834,3 +816,5 @@ adjusted_data %>%
   group_by(Species) %>% 
   summarise(n = n()) %>% 
   write_csv("Output/Data_clean/species_sample_sizes.csv")
+
+

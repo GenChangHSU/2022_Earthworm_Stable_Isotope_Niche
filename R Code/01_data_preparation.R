@@ -3,17 +3,15 @@
 ##
 ## Author: Gen-Chang Hsu
 ##
-## Date: 2021-07-13
+## Date: 2022-05-31
 ##
 ## Description: 
 ## Section 1. Clean the earthworm and soil stable isotope datasets and organize them into 
 ##            a single tidy dataframe.
 ## Section 2. Clean all the soil data and organize them into a single tidy dataframe.
 ## 
-## Notes:
-##
 ## -----------------------------------------------------------------------------
-
+set.seed(123)
 
 # Libraries --------------------------------------------------------------------
 library(tidyverse)
@@ -29,8 +27,7 @@ BARC_raw <- read_xlsx("./Data_raw/BARC_data.xlsx", sheet = 1)
 
 
 ############################### Code starts here ###############################
-
-# Section 1 ---------------------------------------------------------------
+# Section 1 --------------------------------------------------------------------
 ### BiodiversiTREE_1 (excluding Plot 39 and 40)
 BiodiversiTREE_soil_clean1 <- BiodiversiTREE_soil_raw %>% 
   filter(!Plot %in% c(39, 40)) %>%
@@ -60,7 +57,6 @@ BiodiversiTREE_clean1 <- BiodiversiTREE_soil_clean1 %>%
   mutate(Dataset = "BDTR1") %>%
   mutate(Plot = as.character(Plot)) %>%
   select(Dataset, Plot, Species, d13C_worm, d15N_worm, d13C_soil, d15N_soil)
-
 
 ### BiodiversiTREE_2 (Plot 39 and 40)
 BiodiversiTREE_soil_clean2 <- BiodiversiTREE_soil_raw %>% 
@@ -92,7 +88,6 @@ BiodiversiTREE_clean2 <- BiodiversiTREE_soil_clean2 %>%
   mutate(Plot = as.character(Plot)) %>%
   select(Dataset, Plot, Species, d13C_worm, d15N_worm, d13C_soil, d15N_soil)
 
-
 ### BARC
 BARC_worm_clean <- BARC_raw %>% 
   filter(`sample type` == "earthworm") %>% 
@@ -111,7 +106,6 @@ BARC_clean <- BARC_worm_clean %>%
   left_join(BARC_soil_clean, by = "Plot") %>%
   mutate(Dataset = "BARC") %>%
   select(Dataset, Plot, Species, d13C_worm, d15N_worm, d13C_soil, d15N_soil)
-
 
 ### SERC_2011
 SERC_2011_worm_clean <- SERC_raw %>% 
@@ -135,7 +129,6 @@ SERC_2011_clean <- SERC_2011_worm_clean %>%
   mutate(Dataset = "SERC1") %>%
   select(Dataset, Plot, Species, d13C_worm, d15N_worm, d13C_soil, d15N_soil)
 
-
 ### SERC_2013
 SERC_2013_worm_clean <- SERC_raw %>% 
   filter(Year == 2013 & `Sample _type` == "earthworm") %>% 
@@ -157,7 +150,6 @@ SERC_2013_clean <- SERC_2013_worm_clean %>%
   left_join(SERC_2013_soil_clean, by = "Plot") %>%
   mutate(Dataset = "SERC2") %>%
   select(Dataset, Plot, Species, d13C_worm, d15N_worm, d13C_soil, d15N_soil)
-
 
 ### Merge all clean data
 all_data_clean <- bind_rows(BiodiversiTREE_clean1, 
@@ -186,7 +178,7 @@ all_data_clean <- bind_rows(BiodiversiTREE_clean1,
 write_rds(all_data_clean, "./Output/Data_clean/all_data_clean.rds")
 
 
-# Section 2 ---------------------------------------------------------------
+# Section 2 --------------------------------------------------------------------
 ### BDTR1
 BDTR1_soil_clean <- BiodiversiTREE_soil_raw %>%
   select(Plot, Depth, ends_with(c("d13C", "d15N"))) %>% 
@@ -198,7 +190,6 @@ BDTR1_soil_clean <- BiodiversiTREE_soil_raw %>%
   arrange(Plot, Depth) %>%
   semi_join(., y = BiodiversiTREE_clean1, by = "Plot")
 
-
 ### BDTR2
 BDTR2_soil_clean <- BiodiversiTREE_soil_raw %>%
   select(Plot, Depth, ends_with(c("d13C", "d15N"))) %>% 
@@ -209,7 +200,6 @@ BDTR2_soil_clean <- BiodiversiTREE_soil_raw %>%
          Depth = factor(Depth, levels = c("0-2", "2-5", "0-5", "5-10", "10-15", "10-20"), ordered = T)) %>%
   arrange(Plot, Depth) %>%
   semi_join(., y = BiodiversiTREE_clean2, by = "Plot")
-
 
 ### BARC
 BARC_soil_clean_ <- BARC_raw %>% 
@@ -224,7 +214,6 @@ BARC_soil_clean_ <- BARC_raw %>%
          Depth = factor(Depth, levels = c("0-2", "2-5", "0-5", "5-10", "10-15", "10-20"), ordered = T),
          Dataset = "BARC")
 
-
 ### SERC1
 SERC1_soil_clean <- SERC_raw %>% 
   filter(Year == 2011 & `Sample _type` == "soil") %>% 
@@ -238,7 +227,6 @@ SERC1_soil_clean <- SERC_raw %>%
          Depth = factor(Depth, levels = c("0-2", "2-5", "0-5", "5-10", "10-15", "10-20"), ordered = T),
          Dataset = "SERC1")
 
-
 ### SERC2
 SERC2_soil_clean <- SERC_raw %>% 
   filter(Year == 2013 & `Sample _type` == "soil") %>% 
@@ -251,7 +239,6 @@ SERC2_soil_clean <- SERC_raw %>%
                            Depth == "10_15" ~ "10-15"),
          Depth = factor(Depth, levels = c("0-2", "2-5", "0-5", "5-10", "10-15", "10-20"), ordered = T),
          Dataset = "SERC2")
-
 
 ### Merge all clean soil data
 all_soil_clean <- bind_rows(BDTR1_soil_clean, 

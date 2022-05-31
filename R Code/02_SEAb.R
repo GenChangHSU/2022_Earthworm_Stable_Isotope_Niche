@@ -1,18 +1,16 @@
 ## -----------------------------------------------------------------------------
-## Title: Bayesian Standard Ellipses Areas and Overlap between Species
+## Title: Bayesian Standard Ellipse Areas and SEAb Overlap between Species
 ##
 ## Author: Gen-Chang Hsu
 ##
-## Date: 2021-07-13
+## Date: 2022-05-31
 ##
 ## Description: 
 ## Section 1. Compute SEAb for each species and pairwise percentage SEAb overlaps.                
 ##  
-## Notes:
 ##
 ## -----------------------------------------------------------------------------
 set.seed(123)
-
 
 # Libraries --------------------------------------------------------------------
 library(tidyverse)
@@ -29,8 +27,7 @@ all_data_clean <- readRDS("./Output/Data_clean/all_data_clean.rds")
 
 
 ############################### Code starts here ###############################
-
-# Section 1 ---------------------------------------------------------------
+# Section 1 --------------------------------------------------------------------
 ### Background-adjusted earthworm stable isotope values
 adjusted_data <- all_data_clean %>%
   group_by(Dataset) %>%
@@ -48,7 +45,6 @@ adjusted_data <- all_data_clean %>%
   
   # Reorder the levels in column "Dataset" for plotting purpose
   mutate(Dataset = factor(Dataset, levels = unique(Dataset), ordered = T))
-
 
 ### Bayesian SEA for each species
 dataset_list <- unique(as.character(adjusted_data$Dataset))
@@ -185,7 +181,6 @@ SEAb_list <- lapply(dataset_list, function(dataset) {
   
 }) %>% 
   `names<-`(dataset_list)
-
 
 ### Convert the list into a dataframe
 SEAb_df <- SEAb_list %>% 

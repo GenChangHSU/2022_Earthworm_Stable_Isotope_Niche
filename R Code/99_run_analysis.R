@@ -1,9 +1,9 @@
 ## -----------------------------------------------------------------------------
-## Title: Run the entire analysis
+## Title: Run the Entire Analysis
 ##
 ## Author: Gen-Chang Hsu
 ##
-## Date: 2021-07-21
+## Date: 2022-05-31
 ##
 ## Description: Source and run all the R scripts in a logical order for complete 
 ##              analysis results
