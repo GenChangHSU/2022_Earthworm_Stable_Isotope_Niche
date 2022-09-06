@@ -1,10 +1,10 @@
 ## Ecological groups and isotopic niches of earthworms
 
-Hsu, G-C., K. Szlavecz, C. Csuzdi, M. Bernard, and C-H. Chang. 2022. Ecological groups and isotopic niches of earthworms. *Applied Soil Ecology* (in press).
+Hsu, G-C., K. Szlavecz, C. Csuzdi, M. Bernard, and C-H. Chang. 2023. Ecological groups and isotopic niches of earthworms. *Applied Soil Ecology* 181: 104655.
 
 ## Abstract
-
+Earthworms are generally categorized into three ecological groups. This categorization and its two refined versions have been widely used in studies focusing on earthworm community structure and biological invasions, as well as the effects of earthworms on vegetation, soil properties, carbon and nitrogen cycling, and ecosystem functions. We revisited this categorization system by analyzing the stable isotopes of carbon and nitrogen (13C and 15N) from 10 earthworm species commonly found in arable fields and deciduous forests in temperate North America. We showed that up to nine isotopic niches utilized by earthworms can be distinguished in the two-dimensional space delimited by δ13C and δ15N. Rather than forming distinct categories, isotopic niches of different ecological groups form a continuum, ranging from species feeding on leaf litter to those feeding on highly processed soil organic matter. Along this continuum, the three “traditional” groups are recognizable, and species of the same ecological group can exhibit considerable isotopic niche differentiation and resource partitioning. These results, together with field observations on native Lumbricidae in Europe, suggest that, despite their convenience, there are limitations to the commonly used ecological categories. We propose to incorporate stable isotopes as functional traits in studying earthworm ecology and the linkage between earthworm communities and ecosystem functions. Moreover, to fill existing knowledge gaps, the isotopic approach needs to be further expanded to native earthworm communities around the world, particularly outside Western Europe and North America, and to earthworm families and major taxonomic groups other than Lumbricidae, such as Glossoscolecidae, Acanthodrilidae, and Megascolecidae.
 
 ## Article link
-
+https://doi.org/10.1016/j.apsoil.2022.104655
 
